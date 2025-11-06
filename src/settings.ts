@@ -27,7 +27,7 @@ export const template = {
 	website_url: 'https://yoo-un-ee.github.io', // Astro needs to know your site’s deployed URL to generate a sitemap. It must start with http:// or https://
 	menu_left: false,
 	transitions: true,
-	lightTheme: 'winter', // Select one of the Daisy UI Themes or create your own
+	lightTheme: 'fantasy', // Select one of the Daisy UI Themes or create your own
 	darkTheme: 'night', // Select one of the Daisy UI Themes or create your own
 	excerptLength: 200,
 	postPerPage: 5,
