@@ -69,27 +69,27 @@ export const skills = [
 
 export const publications = [
 	{
-		title: '',
+		title: 'Augmenting Human-Centered Racial Covenant Detection and Georeferencing with Plug-and-Play NLP Pipelines',
 		authors: 'Jiyoon Pyo, Yuankun Jiao, Yao-Yi Chiang, Michael Corey',
 		journal: '',
 		time: '',
-		link: '',
+		link: '2025',
 		abstract: '',
 	},
 	{
-		title: '',
-		authors: '',
-		journal: '',
-		time: '',
-		link: '',
+		title: 'Exploiting LLMs and Semantic Technologies to Build a Knowledge Graph of Historical Mining Data',
+		authors: 'Craig A. Knoblock, Binh Vu, Basel Shbita, Yao-Yi Chiang, Pothula Punith Krishna, Xiao Lin, Goran Muric, Jiyoon Pyo, Adriana Trejo-Sheu, Meng Ye',
+		journal: 'The Semantic Web – ISWC 2025: 24th International Semantic Web Conference',
+		time: '2025',
+		link: 'https://dl.acm.org/doi/10.1007/978-3-032-09530-5_26',
 		abstract: '',
 	},
 	{
-		title: '',
+		title: 'Leveraging Large Language Models for Generating Labeled Mineral Site Record Linkage Data ',
 		authors: 'Jiyoon Pyo, Yao-Yi Chiang',
-		journal: '',
-		time: '',
-		link: '',
+		journal: 'GeoAI \'24: Proceedings of the 7th ACM SIGSPATIAL International Workshop on AI for Geographic Knowledge Discovery',
+		time: '2024',
+		link: 'https://dl.acm.org/doi/10.1145/3687123.3698298',
 		abstract: '',
 	},
 	// {
