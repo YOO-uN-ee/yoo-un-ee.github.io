@@ -29,11 +29,12 @@ const ALL_PAPERS = publications; // This will be replaced with dynamic data late
                 <span class="italic">{paper.journal}</span> • {paper.time}
               </p>
               <p class="text-sm text-base-content/80">{paper.abstract}</p>
-              <div class="card-actions justify-end mt-4">
+              {paper.link &&
+              (<div class="card-actions justify-end mt-4">
                 <a href={paper.link} class="btn btn-sm btn-secondary text-secondary-content">
                   Read Paper
                 </a>
-              </div>
+              </div>)}
             </div>
           </div>
         ))
