@@ -12,8 +12,18 @@ const {fullName, title, institute} = Astro.props
   </h1>
   <p class='text-xl text-gray-600 mb-4'>{title}{institute ? ` at ${institute}` : ''}</p>
   <p class='text-lg mb-6'>
-    Brief impactful description of your research focus and academic mission.
-    Highlight your key contributions and areas of expertise.
+    I am a third-year Ph.D. student in Computer Science at the <a href="https://twin-cities.umn.edu/">University of Minnesota–Twin Cities</a>, where I am a member of the <a href="https://knowledge-computing.github.io/">Knowledge Computing Lab</a> advised by <a href="https://yaoyichi.github.io/">Prof. Yao-Yi Chiang</a>.
+  </p>
+  <p class='text-lg mb-6'>
+    My research focuses on advancing the understanding of how large language models (LLMs) and large vision-language models (LVLMs) process geospatial information.
+    I am especially interested in the capabilities and limitations of these models in performing geospatial reasoning tasks, such as interpreting topological relationships, recognizing spatial features, and engaging in multi-hop reasoning over map content.
+    My current work involves developing benchmarks and evaluation methods to assess LVLM map-reasoning abilities, and exploring techniques to enhance their spatial understanding and reliability on domain-specific tasks.
+    Beyond my current work, I am also interested about linguistic variations, including regional terminology differences and cultural influences on data and model interpretation.
+  </p>
+  <p class='text-lg mb-6'>
+    I earned my B.Sc. in Computer Science from the University of Minnesota and both my B.Eng and M.Eng in Electrical Engineering from <a href="https://cooper.edu/">The Cooper Union</a>. 
+    My Master's thesis, Detection and Replacement of Neologisms for Translation, supervised by <a href="https://engfac.cooper.edu/sable2">Dr. Carl Sable</a>, explored methods for identifying newly coined terms to improve machine translation quality. 
+    Additionally, I worked as a research assistant in the <a href="https://lvl.ru.is/">Language and Voice Lab</a> at Reykjavik University with <a href="https://staff.ru.is/stefanola/">Dr. Stefán Ólafsson</a>, where I helped evaluate multilingual language models and their effectiveness for lower-resourced languages.
   </p>
   <div class='flex gap-4'>
     <SocialIcons />

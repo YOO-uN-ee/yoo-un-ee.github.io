@@ -37,7 +37,7 @@ export const education = [
 		time: '2019 - 2023',
 		degree: 'Master\'s in Electrical Engineering',
 		location: 'New York, US',
-		description: 'Thesis: ',
+		description: 'Thesis: Detection and Replacement of Neologisms for Translation',
 	},
 
 	{
