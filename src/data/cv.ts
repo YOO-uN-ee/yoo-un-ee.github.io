@@ -69,6 +69,14 @@ export const skills = [
 
 export const publications = [
 	{
+		title: 'FRIEDA: Benchmarking Multi-Step Cartographic Reasoning in Vision-Language Models',
+		authors: 'Jiyoon Pyo, Yuankun Jiao, Dongwon Jung, Zekun Li, Leeje Jang, Sofia Kirsanova, Jina Kim, Yijun Lin, Qin Liu, Junyi Xie, Hadi Askari, Nan Xu, Muhao Chen, Yao-Yi Chiang',
+		journal: 'Preprint',
+		time: '2025',
+		// link: '#',
+		abstract: '',
+	},
+	{
 		title: 'Augmenting Human-Centered Racial Covenant Detection and Georeferencing with Plug-and-Play NLP Pipelines',
 		authors: 'Jiyoon Pyo, Yuankun Jiao, Yao-Yi Chiang, Michael Corey',
 		journal: 'GeoHCC \'25: Proceedings of the 1st ACM SIGSPATIAL International Workshop on Human-Centered Geospatial Computing',
