@@ -13,14 +13,14 @@ export const profile = {
 // Set equal to an empty string to hide the icon that you don't want to display
 export const social = {
 	email: 'jiyoonp0228@gmail.com',
-	linkedin: '',
-	x: 'https://www.x.com/',
-	github: '',
+	linkedin: 'https://www.linkedin.com/in/yoo-un-ee/',
+	x: 'https://x.com/yoo_un_ee',
+	github: 'https://github.com/YOO-uN-ee',
 	gitlab: '',
 	scholar: '',
 	inspire: '',
 	arxiv: '',
-	orcid: '',
+	orcid: 'https://orcid.org/0009-0000-8746-4411',
 }
 
 export const template = {
