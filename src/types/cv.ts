@@ -25,7 +25,7 @@ export interface Publication {
   journal: string;
   time: string;
   link?: string;
-  abstract?: string;
+  // abstract?: string;
 }
 
 export function isExperience(element: Experience | Education): element is Experience {
