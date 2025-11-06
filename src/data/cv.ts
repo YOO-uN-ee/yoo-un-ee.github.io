@@ -71,9 +71,9 @@ export const publications = [
 	{
 		title: 'Augmenting Human-Centered Racial Covenant Detection and Georeferencing with Plug-and-Play NLP Pipelines',
 		authors: 'Jiyoon Pyo, Yuankun Jiao, Yao-Yi Chiang, Michael Corey',
-		journal: '',
-		time: '',
-		link: '2025',
+		journal: 'GeoHCC \'25: Proceedings of the 1st ACM SIGSPATIAL International Workshop on Human-Centered Geospatial Computing',
+		time: '2025',
+		link: 'https://arxiv.org/abs/2509.05829',
 		abstract: '',
 	},
 	{
