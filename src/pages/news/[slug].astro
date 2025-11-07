@@ -1,0 +1,15 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { getEntryBySlug } from 'astro:content';
+
+const { slug } = Astro.params;
+const post = await getEntryBySlug("news", slug);
+---
+
+<Layout title={post.data.title}>
+  <article class="prose max-w-none">
+    <h1 class="text-3xl font-bold mb-2">{post.data.title}</h1>
+    <p class="text-sm text-base-content/60 mb-6">{post.data.date}</p>
+    <div set:html={post.body} />
+  </article>
+</Layout>
