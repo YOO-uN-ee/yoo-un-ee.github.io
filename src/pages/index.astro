@@ -12,7 +12,7 @@ import ArticleList from '@/components/ui/ArticleList.astro'
 const { fullName, title, institute, research_areas } = profile
 
 // const blogEntries = await getCollection("blog")
-const blogs = (await getCollection("blog"))
+const blogs = [...(await getCollection("blog"))]
   .sort((a, b) => new Date(b.data.date) - new Date(a.data.date))
   .slice(0, 5);
 
