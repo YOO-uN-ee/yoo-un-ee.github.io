@@ -44,7 +44,7 @@ const blogs = [...(await getCollection("blog"))]
 			  {post.body
 				? (
 				  <a
-					href={`${template.base}/blog/${post.slug}`}
+					href={`${template.base}/blog/${post.id}`}
 					class="text-base hover:text-accent"
 				  >
 					{post.data.title}
