@@ -11,19 +11,14 @@ import ArticleList from '@/components/ui/ArticleList.astro'
 
 const { fullName, title, institute, research_areas } = profile
 
-// const blogEntries = await getCollection("blog")
-// const blogs = [...(await getCollection("blog"))]
-//   .sort((a, b) => new Date(b.data.date) - new Date(a.data.date))
-//   .slice(0, 5);
+const newsEntries = await getCollection("news");
 
-const blogEntries = await getCollection("blog");
-
-const posts = blogEntries
+const posts = newsEntries
 	.map(post => ({
 		title: post.data.title,
 		date: post.data.date,
 		badge: post.data.tags[0],
-		slug: `${template.base}/blog/${post.id}`,
+		slug: `${template.base}/news/${post.id}`,
 	}))
 	.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
