@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro'
 
-import { profile } from '@/settings'
+import { profile, template } from '@/settings'
 import { publications } from '@/data/cv'
 import { getCollection } from 'astro:content';
 import ProfilePictures from '@/assets/profile_pictures.jpg'
@@ -43,7 +43,7 @@ const blogs = (await getCollection("blog"))
 			  {post.body
 				? (
 				  <a
-					href={`/blog/${post.slug}`}
+					href={`${template.base}/blog/${post.id}`}
 					class="text-base hover:text-accent"
 				  >
 					{post.data.title}
