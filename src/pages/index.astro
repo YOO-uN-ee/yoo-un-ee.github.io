@@ -43,7 +43,7 @@ const posts = newsEntries
 	</section> -->
 
 	<!-- News Sections -->
-	<section>
+	<section class='py-12 border-b'>
 		<h1 class="text-3xl font-bold mb-8">News</h1>
 		<ul class="space-y-4">
 		  {
@@ -54,17 +54,17 @@ const posts = newsEntries
 					post.body ? (
 					  <a
 						href={post.slug}
-						class="text-base hover:text-accent font-normal"
+						class="text-xl mb-2 hover:text-accent"
 					  >
 						{post.title}
 					  </a>
 					) : (
-					  <span class="text-base text-base-content/80 font-normal">
+					  <span class="text-xl mb-2">
 						{post.title}
 					  </span>
 					)
 				  }
-				  <time datetime={post.date} class="text-xs text-base-content/60 mt-1">
+				  <time datetime={post.date}>
 					{new Date(post.date).toLocaleDateString('en-US', {
 					  year: 'numeric',
 					  month: 'long',
