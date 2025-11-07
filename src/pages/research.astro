@@ -8,20 +8,20 @@ import {RESEARCH_ICONS} from "@/data/researchIcons";
 const { research_areas } = profile;
 ---
 
-<Layout title="Research | Jiyoon Pyo">
+<Layout title="Research">
   <div class="prose max-w-none">
     <h1 class="text-3xl font-bold mb-8">Research Statement</h1>
 
     <div class="mb-12">
-      <p class="text-lg mb-6">
+      <!-- <p class="text-lg mb-6">
         My research focuses on groundbreaking investigations into radioactivity and the discovery of new radioactive elements. Through meticulous experimental techniques and innovative methodologies, I aim to advance our understanding of radioactive phenomena and their applications in both physics and chemistry.
       </p>
       <p class="text-lg mb-6">
         This interdisciplinary approach has led to significant discoveries, including the isolation of polonium and radium, contributing to the foundation of modern nuclear physics and radiochemistry.
-      </p>
+      </p> -->
     </div>
 
-    <h2 class="text-2xl font-bold mb-6">Research Areas</h2>
+    <!-- <h2 class="text-2xl font-bold mb-6">Research Areas</h2>
     <div class="grid gap-8 mb-12">
       {
         research_areas.map((area) => (
@@ -48,22 +48,22 @@ const { research_areas } = profile;
           </div>
         ))
       }
-    </div>
+    </div> -->
 
     <List listTitle="Current Projects" listItems={[
       {
         title: "FARON: Synthetic Cartographic Reasoning Data Generation",
-        description: "Developing a synthetic map dataset to enhance "
+        description: ""
       },
-      {
-        title: "Measurement Techniques",
-        description: "Development of precise methods for measuring radioactive emissions and their properties."
-      }
+      // {
+      //   title: "Measurement Techniques",
+      //   description: "Development of precise methods for measuring radioactive emissions and their properties."
+      // }
     ]} />
 
     <h2 class="text-2xl font-bold mb-6">Research Impact</h2>
     <p class="text-lg mb-6">
-      My research has opened new frontiers in radioactivity studies, leading to practical applications in both scientific research and medical treatments. The discoveries have revolutionized our understanding of atomic structure and radioactive decay processes.
+      <!-- My research has opened new frontiers in radioactivity studies, leading to practical applications in both scientific research and medical treatments. The discoveries have revolutionized our understanding of atomic structure and radioactive decay processes. -->
     </p>
   </div>
 </Layout>
