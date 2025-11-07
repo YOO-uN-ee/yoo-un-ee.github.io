@@ -9,14 +9,14 @@ export async function getStaticPaths({ paginate }): Promise<Astro.getStaticPaths
     const blogEntries = await getCollection("blog");
 
     const posts = blogEntries
-		.map(post => ({
-			title: post.data.title,
-			date: post.data.date,
-			badge: post.data.tags?.[0],
-			excerpt: trimExcerpt(post.data.excerpt),
-			slug: `${template.base}/blog/${post.slug}`,
-		}))
-		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        .map(post => ({
+            title: post.data.title,
+            date: post.data.date,
+            badge: post.data.tags[0],
+            excerpt: trimExcerpt(post.data.excerpt),
+            slug: `${template.base}/blog/${post.id}`,
+        }))
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return paginate(posts, {
         pageSize: template.postPerPage,

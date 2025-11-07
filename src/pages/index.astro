@@ -11,8 +11,8 @@ import ArticleList from '@/components/ui/ArticleList.astro'
 
 const { fullName, title, institute, research_areas } = profile
 
-const blogEntries = await getCollection("blog")
-// const blogs = (await getCollection("blog"))
+// const blogEntries = await getCollection("blog")
+const blogs = (await getCollection("blog"))
   .sort((a, b) => new Date(b.data.date) - new Date(a.data.date))
   .slice(0, 5);
 
@@ -44,7 +44,7 @@ const blogEntries = await getCollection("blog")
 			  {post.body
 				? (
 				  <a
-					href={`${template.base}/blog/${post.id}`}
+					href={`${template.base}/blog/${post.slug}`}
 					class="text-base hover:text-accent"
 				  >
 					{post.data.title}
