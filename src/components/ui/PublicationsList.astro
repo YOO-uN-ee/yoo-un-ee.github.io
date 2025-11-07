@@ -35,19 +35,14 @@ const { elements } = Astro.props
         {element.time}
       </p>
       {/* <p>{element.abstract}</p> */}
-      <div x-data="{ open: false }" class="mt-2">
-        <button
-          class="btn btn-link btn-sm"
-          @click="open = !open"
-          x-text="open ? 'Hide Abstract' : 'Read Abstract'">
-        </button>
-
-        <p
-          x-show="open"
-          class="text-sm mt-1"
-          x-transition>
-          {element.abstract}
-        </p>
+      <div class="collapse bg-base-200 mt-2">
+        <input type="checkbox" /> 
+        <div class="collapse-title text-sm font-medium">
+          Read Abstract
+        </div>
+        <div class="collapse-content">
+          <p class="text-sm">{element.abstract}</p>
+        </div>
       </div>
       </>
     }
