@@ -11,9 +11,9 @@ import ArticleList from '@/components/ui/ArticleList.astro'
 
 const { fullName, title, institute, research_areas } = profile
 
-const news = (await getCollection('news'))
-  .sort((a,b) => new Date(b.data.date) - new Date(a.data.date)) // newest first
-  .slice(0, 5); // show 5 recent updates
+// const news = (await getCollection('news'))
+//   .sort((a,b) => new Date(b.data.date) - new Date(a.data.date)) // newest first
+//   .slice(0, 5); // show 5 recent updates
 
 // Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
 // Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
@@ -35,7 +35,7 @@ const news = (await getCollection('news'))
 		<Grid gridTitle='Research Areas' gridItems={research_areas} />
 	</section> -->
 
-	<section class="mt-12">
+	<!-- <section class="mt-12">
 		<h2 class="text-2xl font-bold mb-4">News</h2>
 		<ul class="space-y-3">
 		  {news.map((post) => (
@@ -58,7 +58,7 @@ const news = (await getCollection('news'))
 			</li>
 		  ))}
 		</ul>
-	  </section>
+	  </section> -->
 
 	<!-- Recent Publications -->
 	<section class='py-12 border-t'>
