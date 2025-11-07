@@ -47,68 +47,42 @@ const posts = blogEntries
 		<Grid gridTitle='Research Areas' gridItems={research_areas} />
 	</section> -->
 
-	<h1 class='text-3xl font-bold mb-8'>Blog Posts</h1>
-		<div class='grid gap-8'>
-			{
-				posts.map(post => (
-					<article class='card bg-base-200 transition-all'>
-						<div class='card-body'>
-							<div class='flex justify-between items-start'>
-								<h2 class='card-title text-xl'>
-                            <a href={post.slug} class='hover:text-accent'>
-										{post.title}
-									</a>
-								</h2>
-								<div class='badge badge-accent badge-outline p-4'>
-									{post.badge}
-								</div>
-							</div>
-							<time datetime={post.date} class='text-sm text-base-content/71'>
-								{new Date(post.date).toLocaleDateString('en-US', {
-									year: 'numeric',
-									month: 'long',
-									day: 'numeric',
-								})}
-							</time>
-							<p class='mt-4'>{post.excerpt}</p>
-							<div class='card-actions justify-end'>
-								<a
-                            href={post.slug}
-									class='btn btn-sm btn-secondary text-secondary-content'
-								>
-									Read More
-								</a>
-							</div>
-						</div>
-					</article>
-				))
-			}
-		</div>
-
-	<!-- <section class="mt-12">
-		<h2 class="text-3xl font-bold mb-8">Blog</h2>
-		<ul class="space-y-1">
-		  {blogs.map((post) => (
-			<li>
-			  {post.body
-				? (
-				  <a
-					href={`${template.base}/blog/${post.id}`}
-					class="text-base hover:text-accent"
-				  >
-					{post.data.title}
-				  </a>
-				) : (
-				  <span class="text-base text-base-content/80">
-					{post.data.title}
-				  </span>
-				)
-			  }
-			</li>
-		  ))}
+	<!-- News Sections -->
+	<section>
+		<h1 class="text-3xl font-bold mb-8">News</h1>
+		<ul class="space-y-4">
+		  {
+			posts.map(post => (
+			  <li>
+				<div class="flex flex-col">
+				  {
+					post.body ? (
+					  <a
+						href={post.slug}
+						class="text-base hover:text-accent font-normal"
+					  >
+						{post.title}
+					  </a>
+					) : (
+					  <span class="text-base text-base-content/80 font-normal">
+						{post.title}
+					  </span>
+					)
+				  }
+				  <time datetime={post.date} class="text-xs text-base-content/60 mt-1">
+					{new Date(post.date).toLocaleDateString('en-US', {
+					  year: 'numeric',
+					  month: 'long',
+					  day: 'numeric',
+					})}
+				  </time>
+				</div>
+			  </li>
+			))
+		  }
 		</ul>
 	  </section>
- -->
+
 	<!-- Recent Publications -->
 	<section class='py-12 border-t'>
 		<ArticleList listTitle='Recent Publications' listItems={publications} />
