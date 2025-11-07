@@ -12,9 +12,20 @@ import ArticleList from '@/components/ui/ArticleList.astro'
 const { fullName, title, institute, research_areas } = profile
 
 // const blogEntries = await getCollection("blog")
-const blogs = [...(await getCollection("blog"))]
-  .sort((a, b) => new Date(b.data.date) - new Date(a.data.date))
-  .slice(0, 5);
+// const blogs = [...(await getCollection("blog"))]
+//   .sort((a, b) => new Date(b.data.date) - new Date(a.data.date))
+//   .slice(0, 5);
+
+const blogEntries = await getCollection("blog");
+
+const posts = blogEntries
+	.map(post => ({
+		title: post.data.title,
+		date: post.data.date,
+		badge: post.data.tags[0],
+		slug: `${template.base}/blog/${post.id}`,
+	}))
+	.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
 // Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
 // Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
@@ -36,7 +47,45 @@ const blogs = [...(await getCollection("blog"))]
 		<Grid gridTitle='Research Areas' gridItems={research_areas} />
 	</section> -->
 
-	<section class="mt-12">
+	<h1 class='text-3xl font-bold mb-8'>Blog Posts</h1>
+		<div class='grid gap-8'>
+			{
+				page.data.map(post => (
+					<article class='card bg-base-200 transition-all'>
+						<div class='card-body'>
+							<div class='flex justify-between items-start'>
+								<h2 class='card-title text-xl'>
+                            <a href={post.slug} class='hover:text-accent'>
+										{post.title}
+									</a>
+								</h2>
+								<div class='badge badge-accent badge-outline p-4'>
+									{post.badge}
+								</div>
+							</div>
+							<time datetime={post.date} class='text-sm text-base-content/71'>
+								{new Date(post.date).toLocaleDateString('en-US', {
+									year: 'numeric',
+									month: 'long',
+									day: 'numeric',
+								})}
+							</time>
+							<p class='mt-4'>{post.excerpt}</p>
+							<div class='card-actions justify-end'>
+								<a
+                            href={post.slug}
+									class='btn btn-sm btn-secondary text-secondary-content'
+								>
+									Read More
+								</a>
+							</div>
+						</div>
+					</article>
+				))
+			}
+		</div>
+
+	<!-- <section class="mt-12">
 		<h2 class="text-3xl font-bold mb-8">Blog</h2>
 		<ul class="space-y-1">
 		  {blogs.map((post) => (
@@ -59,7 +108,7 @@ const blogs = [...(await getCollection("blog"))]
 		  ))}
 		</ul>
 	  </section>
-
+ -->
 	<!-- Recent Publications -->
 	<section class='py-12 border-t'>
 		<ArticleList listTitle='Recent Publications' listItems={publications} />
