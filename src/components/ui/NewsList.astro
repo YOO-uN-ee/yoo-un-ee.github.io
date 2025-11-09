@@ -3,23 +3,84 @@ interface Props {
   listTitle: string;
   listItems: {
     title: string;
-    journal: string;
-    time: string;
+	slug: string;
+    date: string;
   }[];
 }
 const {listTitle, listItems} = Astro.props
 ---
 
-<h2 class='text-3xl font-bold mb-8'>Recent Publications</h2>
+<h2 class='text-3xl font-bold mb-8'>News</h2>
 		<div class='space-y-6'>
 			{
 				listItems.map(item => (
 					<div class='p-6 rounded-lg text-base-content bg-base-200'>
-						<h3 class='text-xl font-semibold mb-2'>{item.title}</h3>
-						<p >
-							{item.journal} • {item.time}
-						</p>
+						{
+							item.body ? (
+							<a
+								href={item.slug}
+								class="hover:text-accent"
+							>
+								<h3 class='text-xl font-semibold mb-2'>{item.title}</h3>
+							</a>
+							) : (
+								<h3 class='text-xl font-semibold mb-2'>{item.title}</h3>
+							)
+						}
+						
+						{/* <p >
+							{item.time}
+						</p> */}
+						<time datetime={item.date}>
+							{new Date(item.date).toLocaleDateString('en-US', {
+								year: 'numeric',
+								month: 'long',
+								day: 'numeric',
+							})}
+					  </time>
 					</div>
 				))
 			}
 		</div>
+
+
+
+
+
+
+		<!-- <section class='py-12 border-b'>
+			<h1 class="text-3xl font-bold mb-8">News</h1>
+			<ul class="space-y-4">
+			  {
+				posts.map(post => (
+				  <li>
+					<div class="flex flex-col">
+					  {
+						post.body ? (
+						  <a
+							href={post.slug}
+							class="text-xl font-semibold mb-2 hover:text-accent"
+						  >
+							{post.title}
+						  </a>
+						) : (
+						  <span class="text-xl font-semibold mb-2">
+							{post.title}
+						  </span>
+						)
+					  }
+					  <time datetime={post.date}>
+						{new Date(post.date).toLocaleDateString('en-US', {
+						  year: 'numeric',
+						  month: 'long',
+						  day: 'numeric',
+						})}
+					  </time>
+					</div>
+				  </li>
+				))
+			  }
+			</ul>
+		  </section> -->
+	
+	

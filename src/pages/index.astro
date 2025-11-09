@@ -8,6 +8,7 @@ import ProfilePictures from '@/assets/profile_pictures.jpg'
 import Hero from '@/components/ui/Hero.astro'
 import Grid from '@/components/ui/Grid.astro'
 import ArticleList from '@/components/ui/ArticleList.astro'
+import NewsList from '@/components/ui/NewsList.astro'
 
 const { fullName, title, institute, research_areas } = profile
 
@@ -78,8 +79,12 @@ const posts = newsEntries
 		</ul>
 	  </section>
 
-	<!-- Recent Publications -->
 	<section class='py-12 border-t'>
-		<ArticleList listTitle='Recent Publications' listItems={publications} />
+		<NewsList listTitle='News' listItems={posts} />
 	</section>
+
+	<!-- Recent Publications -->
+	<!-- <section class='py-12 border-t'>
+		<ArticleList listTitle='Recent Publications' listItems={publications} />
+	</section> -->
 </Layout>
