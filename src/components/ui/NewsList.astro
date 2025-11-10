@@ -62,35 +62,29 @@ const { listTitle, listItems } = Astro.props;
 	{
 	listItems.map((item) => (
 		<div class="grid grid-cols-[8rem_1fr] gap-x-6 items-baseline">
-		{/* === Column 1: Date === */}
-		{/* Using a fixed width (8rem) for the first column ensures all descriptions align vertically */}
-		<time datetime={item.date} class="text-lg text-base-content/70"> {/* Added opacity for the lighter date color from your image */}
+		<time datetime={item.date} class="text-lg text-base-content/70">
 			{new Date(item.date).toLocaleDateString("en-US", {
 			year: "numeric",
-			month: "short", // Changed from 'long' to 'short' (e.g., "Oct")
+			month: "short",
 			day: "numeric",
 			})}
 		</time>
 
-		{/* === Column 2: Description === */}
-		<div class="text-lg mb-6">
+		<div class="text-lg">
 			{
-			// This logic for linking is preserved from your original script
 			item.body ? (
 				<a
 				href={item.slug}
 				class="hover:text-accent hover:underline"
 				>
-				{/* Changed from <h3> to <p> to match image */}
 				<p>{item.title}</p>
 				</a>
 			) : (
-				// Changed from <h3> to <p> to match image
 				<p>{item.title}</p>
 			)
 			}
 		</div>
-		</div>
+	</div>
 	))
 	}
 </div>
