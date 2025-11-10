@@ -48,10 +48,10 @@ const {listTitle, listItems} = Astro.props
 interface Props {
 	listTitle: string;
 	listItems: {
-	title: string;
-	slug: string;
-	date: string;
-	body?: any;
+		title: string;
+		slug: string;
+		date: string;
+		body?: any;
 	}[];
 }
 const { listTitle, listItems } = Astro.props;
@@ -64,7 +64,7 @@ const { listTitle, listItems } = Astro.props;
 		<div class="grid grid-cols-[8rem_1fr] gap-x-6 items-baseline">
 		{/* === Column 1: Date === */}
 		{/* Using a fixed width (8rem) for the first column ensures all descriptions align vertically */}
-		<time datetime={item.date} class="text-base-content/70"> {/* Added opacity for the lighter date color from your image */}
+		<time datetime={item.date} class="text-lg text-base-content/70"> {/* Added opacity for the lighter date color from your image */}
 			{new Date(item.date).toLocaleDateString("en-US", {
 			year: "numeric",
 			month: "short", // Changed from 'long' to 'short' (e.g., "Oct")
@@ -73,7 +73,7 @@ const { listTitle, listItems } = Astro.props;
 		</time>
 
 		{/* === Column 2: Description === */}
-		<div>
+		<div class="text-lg mb-6">
 			{
 			// This logic for linking is preserved from your original script
 			item.body ? (
