@@ -41,12 +41,27 @@ const ALL_PAPERS = publications; // This will be replaced with dynamic data late
 
               <p class="text-sm text-base-content/80">{paper.abstract}</p>
 
+              {paper.github &&
+              (<div class="card-actions justify-end mt-4">
+                <a href={paper.github} class="btn btn-sm btn-secondary text-secondary-content">
+                  GitHub
+                </a>
+              </div>)}
+
               {paper.link &&
               (<div class="card-actions justify-end mt-4">
-                <a href={paper.link} class="btn btn-sm btn-secondary-content text-secondary">
+                <a href={paper.link} class="btn btn-sm btn-secondary text-secondary-content">
                   Read Paper
                 </a>
               </div>)}
+
+              {/* Maybe create for slides */}
+              {/* {paper.s &&
+              (<div class="card-actions justify-end mt-4">
+                <a href={paper.github} class="btn btn-sm btn-secondary text-secondary-content">
+                  GitHub
+                </a>
+              </div>)} */}
             </div>
           </div>
         ))
