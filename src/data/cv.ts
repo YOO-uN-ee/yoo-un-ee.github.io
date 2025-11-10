@@ -109,3 +109,18 @@ export const publications = [
 		abstract: 'Record linkage integrates diverse data sources by identifying records that refer to the same entity. The record linkage task is applicable and essential in various domains, such as history and epidemiology. In the context of mineral site records, accurate record linkage is crucial for identifying and mapping mineral deposits. Properly linking records that refer to the same mineral deposit helps define the spatial coverage of mineral areas, benefiting resource identification and site data archiving. Mineral site record linkage falls under the spatial record linkage category since the records contain information about the physical locations and non-spatial attributes in a tabular format. The task is particularly challenging due to the heterogeneity and vast scale of the data. While prior research employs pre-trained discriminative language models (PLMs) on spatial entity linkage, they often require substantial amounts of curated ground-truth data for fine-tuning. Gathering and creating ground truth data is both time-consuming and costly. Therefore, such approaches are not always feasible in real-world scenarios where gold-standard data are unavailable. Although large generative language models (LLMs) have shown promising results in various natural language processing tasks, including record linkage, their high inference time and resource demand present challenges. We propose a method that leverages an LLM to generate training data and fine-tune a PLM to address the training data gap while preserving the efficiency of PLMs. Our approach achieves over 45% improvement in F1 score for record linkage compared to traditional PLM-based methods using ground truth data while reducing the inference time by nearly 18 times compared to relying on LLMs. Additionally, we offer an automated pipeline that eliminates the need for human intervention, highlighting this approach\'s potential to overcome record linkage challenges.',
 	},
 ];
+
+export const teaching = [
+	{
+		title: 'CSCI4541: Introduction to Natural Language Processing',
+		semester: 'Fall 2025',
+	},
+	{
+		title: 'CSCI5523: Introduction to Data Mining',
+		semester: 'Spring 2024',
+	},
+	{
+		title: 'CSCI1913: Introduction to Algorithms, Data Structures, and Program Development',
+		semester: 'Fall 2023',
+	},
+];

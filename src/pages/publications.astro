@@ -27,7 +27,7 @@ const ALL_PAPERS = publications; // This will be replaced with dynamic data late
                       <h2 class="card-title text-xl hover:text-accent">{paper.title}</h2>
                     </a>
                   ) : (
-                  <h2 class="card-title text-xl underline">{paper.title}</h2>
+                  <h2 class="card-title text-xl">{paper.title}</h2>
                   )
                 }
 
@@ -43,7 +43,7 @@ const ALL_PAPERS = publications; // This will be replaced with dynamic data late
 
               {paper.link &&
               (<div class="card-actions justify-end mt-4">
-                <a href={paper.link} class="btn btn-sm btn-secondary text-secondary-content">
+                <a href={paper.link} class="btn btn-sm btn-secondary-content text-neutral-content">
                   Read Paper
                 </a>
               </div>)}
