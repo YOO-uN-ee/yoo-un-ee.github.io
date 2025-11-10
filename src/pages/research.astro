@@ -3,6 +3,7 @@ import Layout from "@/layouts/Layout.astro";
 import { profile } from "@/settings";
 import BetterIcon from "@/components/ui/BetterIcon.astro";
 import List from "@/components/ui/List.astro";
+import Projects from "@/components/ui/Projects.astro";
 import {RESEARCH_ICONS} from "@/data/researchIcons";
 
 const { research_areas } = profile;
@@ -50,11 +51,11 @@ const { research_areas } = profile;
       }
     </div> -->
 
-    <List listTitle="Ongoing Projects" listItems={[
+    <Projects listTitle="Ongoing Projects" listItems={[
       {
         title: "FARON: Synthetic Cartographic Reasoning Dataset",
         description: "Creating synthetic step-by-step cartographic reasoning dataset.",
-        // github: "https://github.com/YOO-uN-ee/FARON-dataset",
+        github: "https://github.com/YOO-uN-ee/FARON-dataset",
       },
       
       {
@@ -66,7 +67,7 @@ const { research_areas } = profile;
       {
         title: "MARCIE: Improving 4D Data Comprehension of LVLMs",
         description: "Modifying positional encoding, structure of LVLMs to improve their performance on 4D data (i.e., 3D objects changing with time),",
-        // github: "https://github.com/Esther-Whang-PhD/MARCIE/tree/dev",
+        github: "https://github.com/Esther-Whang-PhD/MARCIE/tree/dev",
       },
       // {
       //   title: "Measurement Techniques",
