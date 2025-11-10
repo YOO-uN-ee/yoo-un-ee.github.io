@@ -62,7 +62,7 @@ const { listTitle, listItems } = Astro.props;
 	{
 	listItems.map((item) => (
 		<div class="grid grid-cols-[8rem_1fr] gap-x-6 items-baseline">
-		<time datetime={item.date} class="text-lg text-base-content/70">
+		<time datetime={item.date} class="text-base text-base-content/70">
 			{new Date(item.date).toLocaleDateString("en-US", {
 			year: "numeric",
 			month: "short",
@@ -70,7 +70,7 @@ const { listTitle, listItems } = Astro.props;
 			})}
 		</time>
 
-		<div class="text-lg">
+		<div class="text-base">
 			{
 			item.body ? (
 				<a
