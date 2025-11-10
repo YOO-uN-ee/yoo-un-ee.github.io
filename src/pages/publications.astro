@@ -3,16 +3,51 @@ import Layout from "@/layouts/Layout.astro";
 import { publications } from "@/data/cv";
 import { highlightAuthor } from "@/lib/utils";
 import {template} from "@/settings";
+
+import type { Publication } from '../types/cv'
 import PublicationsList from '@/components/ui/PublicationsList.astro'
 
 const ALL_PAPERS = publications; // This will be replaced with dynamic data later
+
+let orderedPublications: Publication[] = []
+
+const orderElement = <T extends { time: string }>(a: T, b: T) => {
+  const presentValues = ['present', 'now', 'current', 'today']
+  if (
+			presentValues.includes(
+				(a['time'] as string)?.split(' - ')[1]?.toLowerCase()
+			)
+		) {
+			// If the date is 'present', it should be the first element
+			return -1
+		}
+		const dateA = new Date((a['time'] as string)?.split(' - ')[1])
+		const dateB = new Date((b['time'] as string)?.split(' - ')[1])
+		return dateB.getTime() - dateA.getTime()
+}
+
+if (publications.length > 0) {
+	orderedPublications = publications.sort((a, b) => {
+		return orderElement(a, b)
+	})
+}
+
 ---
 
 <Layout title="Publications">
   <div class="prose max-w-none">
     <h1 class="text-3xl font-bold mb-8">Publications</h1>
 
-    <PublicationsList elements={ALL_PAPERS}/>
+    {
+      orderedPublications.length > 0 && (
+        <section class='mb-12'>
+          <h2 class='text-2xl font-bold mb-6 border-b pb-2'>
+            Publications
+          </h2>
+          <PublicationsList elements={orderedPublications}/>
+        </section>
+      )
+    }
 
     <div class="space-y-4">
       {
