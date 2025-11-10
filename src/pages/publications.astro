@@ -38,22 +38,11 @@ const ALL_PAPERS = publications; // This will be replaced with dynamic data late
   <div class="prose max-w-none">
     <h1 class="text-3xl font-bold mb-8">Publications</h1>
 
-    <!-- {
-      orderedPublications.length > 0 && (
-        <section class='mb-12'>
-          <h2 class='text-2xl font-bold mb-6 border-b pb-2'>
-            Publications
-          </h2>
-          <PublicationsList elements={orderedPublications}/>
-        </section>
-      )
-    } -->
-
-    <div class="space-y-4">
+    <div class="space-y-8">
       {
         ALL_PAPERS.map((paper) => (
           <div class="card bg-base-200">
-            <div class="card-body">
+            <div class="card-body py-4 px-6">
 
             {
               paper.link ? (
@@ -96,31 +85,6 @@ const ALL_PAPERS = publications; // This will be replaced with dynamic data late
                 {paper.abstract}
               </p>
             </details>
-
-                {/* {
-                  paper.link ? (
-                    <a
-                      href={template.base + paper.link}
-                      class="no-underline hover:text-accent"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <h2 class="card-title text-xl hover:text-accent">{paper.title}</h2>
-                    </a>
-                  ) : (
-                  <h2 class="card-title text-xl">{paper.title}</h2>
-                  )
-                }
-
-              <p class="text-base mb-2">
-                <span class="font-medium">Authors:</span>{" "}
-                <span set:html={highlightAuthor(paper.authors)} />
-              </p>
-              <p class="text-sm mb-3">
-                <span class="italic">{paper.journal}</span> • {paper.time}
-              </p>
-
-              <p class="text-sm text-base-content/80">{paper.abstract}</p> */}
 
               <div class="card-actions justify-end mt-4 gap-x-2">
                 {paper.github &&
