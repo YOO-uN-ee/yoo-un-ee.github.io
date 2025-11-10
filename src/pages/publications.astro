@@ -42,7 +42,7 @@ const ALL_PAPERS = publications; // This will be replaced with dynamic data late
       {
         ALL_PAPERS.map((paper) => (
           <div class="card bg-base-200">
-            <div class="card-body py-2">
+            <div class="card-body py-6">
 
             {
               paper.link ? (
@@ -52,10 +52,10 @@ const ALL_PAPERS = publications; // This will be replaced with dynamic data late
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <h3 class='text-xl font-bold mb-2 hover:text-accent'>{paper.title}</h3>
+                  <h3 class='text-xl font-bold hover:text-accent'>{paper.title}</h3>
                 </a>
               ) : (
-                <h3 class='text-xl font-bold mb-2'>{paper.title}</h3>
+                <h3 class='text-xl font-bold'>{paper.title}</h3>
               )
             }
             <p class='text-base mb-2'>
