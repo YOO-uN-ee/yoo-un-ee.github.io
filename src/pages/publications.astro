@@ -20,11 +20,11 @@ const ALL_PAPERS = publications; // This will be replaced with dynamic data late
                   paper.link ? (
                     <a
                       href={template.base + paper.link}
-                      class="hover:text-accent"
+                      class="no-underline hover:text-accent"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <h2 class="text-xl hover:text-accent">{paper.title}</h2>
+                      <h2 class="card-title text-xl hover:text-accent">{paper.title}</h2>
                     </a>
                   ) : (
                   <h2 class="card-title text-xl">{paper.title}</h2>
