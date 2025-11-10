@@ -1,4 +1,4 @@
----
+<!-- ---
 interface Props {
   listTitle: string;
   listItems: {
@@ -41,46 +41,56 @@ const {listTitle, listItems} = Astro.props
 					</div>
 				))
 			}
+		</div> -->
+
+
+---
+interface Props {
+	listTitle: string;
+	listItems: {
+	title: string;
+	slug: string;
+	date: string;
+	body?: any;
+	}[];
+}
+const { listTitle, listItems } = Astro.props;
+---
+
+<h2 class="text-3xl font-bold mb-8">News</h2>
+<div class="space-y-6">
+	{
+	listItems.map((item) => (
+		<div class="grid grid-cols-[8rem_1fr] gap-x-6 items-baseline">
+		{/* === Column 1: Date === */}
+		{/* Using a fixed width (8rem) for the first column ensures all descriptions align vertically */}
+		<time datetime={item.date} class="text-base-content/70"> {/* Added opacity for the lighter date color from your image */}
+			{new Date(item.date).toLocaleDateString("en-US", {
+			year: "numeric",
+			month: "short", // Changed from 'long' to 'short' (e.g., "Oct")
+			day: "numeric",
+			})}
+		</time>
+
+		{/* === Column 2: Description === */}
+		<div>
+			{
+			// This logic for linking is preserved from your original script
+			item.body ? (
+				<a
+				href={item.slug}
+				class="hover:text-accent hover:underline"
+				>
+				{/* Changed from <h3> to <p> to match image */}
+				<p>{item.title}</p>
+				</a>
+			) : (
+				// Changed from <h3> to <p> to match image
+				<p>{item.title}</p>
+			)
+			}
 		</div>
-
-
-
-
-
-
-		<!-- <section class='py-12 border-b'>
-			<h1 class="text-3xl font-bold mb-8">News</h1>
-			<ul class="space-y-4">
-			  {
-				posts.map(post => (
-				  <li>
-					<div class="flex flex-col">
-					  {
-						post.body ? (
-						  <a
-							href={post.slug}
-							class="text-xl font-semibold mb-2 hover:text-accent"
-						  >
-							{post.title}
-						  </a>
-						) : (
-						  <span class="text-xl font-semibold mb-2">
-							{post.title}
-						  </span>
-						)
-					  }
-					  <time datetime={post.date}>
-						{new Date(post.date).toLocaleDateString('en-US', {
-						  year: 'numeric',
-						  month: 'long',
-						  day: 'numeric',
-						})}
-					  </time>
-					</div>
-				  </li>
-				))
-			  }
-			</ul>
-		  </section> -->
-	
-	
+		</div>
+	))
+	}
+</div>
