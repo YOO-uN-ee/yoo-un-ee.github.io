@@ -3,6 +3,7 @@ import Layout from "@/layouts/Layout.astro";
 import { publications } from "@/data/cv";
 import { highlightAuthor } from "@/lib/utils";
 import {template} from "@/settings";
+import PublicationsList from '@/components/ui/PublicationsList.astro'
 
 const ALL_PAPERS = publications; // This will be replaced with dynamic data later
 ---
@@ -10,6 +11,8 @@ const ALL_PAPERS = publications; // This will be replaced with dynamic data late
 <Layout title="Publications">
   <div class="prose max-w-none">
     <h1 class="text-3xl font-bold mb-8">Publications</h1>
+
+    <PublicationsList elements={ALL_PAPERS}/>
 
     <div class="space-y-4">
       {

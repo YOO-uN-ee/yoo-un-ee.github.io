@@ -34,7 +34,7 @@ export const education = [
 
 	{
 		school: 'The Cooper Union for the Advancement of Science and Art',
-		time: '2019 - 2023',
+		time: '2021 - 2023',
 		degree: 'Master\'s in Electrical Engineering',
 		location: 'New York, US',
 		description: 'Thesis: Detection and Replacement of Neologisms for Translation',
