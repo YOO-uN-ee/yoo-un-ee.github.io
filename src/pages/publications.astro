@@ -9,28 +9,28 @@ import PublicationsList from '@/components/ui/PublicationsList.astro'
 
 const ALL_PAPERS = publications; // This will be replaced with dynamic data later
 
-let orderedPublications: Publication[] = []
+// let orderedPublications: Publication[] = []
 
-const orderElement = <T extends { time: string }>(a: T, b: T) => {
-  const presentValues = ['present', 'now', 'current', 'today']
-  if (
-			presentValues.includes(
-				(a['time'] as string)?.split(' - ')[1]?.toLowerCase()
-			)
-		) {
-			// If the date is 'present', it should be the first element
-			return -1
-		}
-		const dateA = new Date((a['time'] as string)?.split(' - ')[1])
-		const dateB = new Date((b['time'] as string)?.split(' - ')[1])
-		return dateB.getTime() - dateA.getTime()
-}
+// const orderElement = <T extends { time: string }>(a: T, b: T) => {
+//   const presentValues = ['present', 'now', 'current', 'today']
+//   if (
+// 			presentValues.includes(
+// 				(a['time'] as string)?.split(' - ')[1]?.toLowerCase()
+// 			)
+// 		) {
+// 			// If the date is 'present', it should be the first element
+// 			return -1
+// 		}
+// 		const dateA = new Date((a['time'] as string)?.split(' - ')[1])
+// 		const dateB = new Date((b['time'] as string)?.split(' - ')[1])
+// 		return dateB.getTime() - dateA.getTime()
+// }
 
-if (publications.length > 0) {
-	orderedPublications = publications.sort((a, b) => {
-		return orderElement(a, b)
-	})
-}
+// if (publications.length > 0) {
+// 	orderedPublications = publications.sort((a, b) => {
+// 		return orderElement(a, b)
+// 	})
+// }
 
 ---
 
@@ -38,7 +38,7 @@ if (publications.length > 0) {
   <div class="prose max-w-none">
     <h1 class="text-3xl font-bold mb-8">Publications</h1>
 
-    {
+    <!-- {
       orderedPublications.length > 0 && (
         <section class='mb-12'>
           <h2 class='text-2xl font-bold mb-6 border-b pb-2'>
@@ -47,13 +47,57 @@ if (publications.length > 0) {
           <PublicationsList elements={orderedPublications}/>
         </section>
       )
-    }
+    } -->
 
     <div class="space-y-4">
       {
         ALL_PAPERS.map((paper) => (
           <div class="card bg-base-200">
             <div class="card-body">
+
+      {
+        paper.link ? (
+          <a
+            href={paper.link  as string}
+            class="block hover:text-accent transition-colors duration-200"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <h3 class='text-lg font-bold mb-2'>{paper.title}</h3>
+          </a>
+        ) : (
+          <h3 class='text-lg font-bold mb-2'>{paper.title}</h3>
+        )
+      }
+      <p class='text-base mb-2'>
+        <span class='font-medium'>Authors:</span>{' '}
+        <span
+          set:html={highlightAuthor(paper.authors as string)}
+        />
+      </p>
+      <p class='text-sm mb-3'>
+        <span class='italic'>{paper.journal}</span> •{' '}
+        {paper.time}
+      </p>
+
+      <details class="mt-2 group">
+        <summary class="cursor-pointer text-sm font-medium flex items-center gap-1">
+          <span class="group-open:hidden">Read Abstract</span>
+          <span class="hidden group-open:inline">Hide Abstract</span>
+          
+          <svg class="w-4 h-4 transition-transform group-open:rotate-180"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+
+        <p class="text-sm mt-2 ml-1">
+          {paper.abstract}
+        </p>
+      </details>
+    {/* } */}
+
                 {
                   paper.link ? (
                     <a
