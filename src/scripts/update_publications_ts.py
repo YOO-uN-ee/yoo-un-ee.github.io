@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import re
 import os
 import time
 from datetime import datetime
@@ -28,7 +29,35 @@ def pick_year(pub: dict) -> str:
 
 def pick_venue(pub: dict) -> str:
     bib = pub.get("bib", {}) or {}
-    return (bib.get("venue") or bib.get("journal") or bib.get("conference") or "").strip()
+
+    # 1) Try structured fields first (when available)
+    for k in ("venue", "journal", "booktitle", "conference", "publisher", "organization", "institution"):
+        v = (bib.get(k) or "").strip()
+        if v:
+            return v
+
+    # 2) Fallback: parse the citation string (this is commonly present)
+    cit = (bib.get("citation") or "").strip()
+    if not cit:
+        return ""
+
+    # Normalize whitespace
+    cit = re.sub(r"\s+", " ", cit).strip()
+
+    # If it's an arXiv-style citation, collapse to "arXiv"
+    if "arxiv" in cit.lower():
+        return "arXiv"
+
+    # Common pattern: "Venue, YEAR"  -> take before first comma
+    head = cit.split(",", 1)[0].strip()
+    if head and head.lower() != "unknown":
+        return head
+
+    # Otherwise, strip trailing year-ish or page-ish suffixes from entire citation
+    # Remove " ... 2025" or " ... (2025)" or " ... pp. 12-34"
+    cit2 = re.sub(r"\s*\(?\b(19|20)\d{2}\b\)?\s*$", "", cit).strip()
+    cit2 = re.sub(r"\s+\bpp?\.\s*\d+.*$", "", cit2).strip()
+    return cit2
 
 def pick_authors(pub: dict) -> str:
     bib = pub.get("bib", {}) or {}
