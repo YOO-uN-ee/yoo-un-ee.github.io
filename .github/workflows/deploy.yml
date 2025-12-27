@@ -42,7 +42,7 @@ jobs:
 
       - name: Update publications file
         run: |
-          python src/scripts/update_scholar_publications.py
+          python src/scripts/update_publications_ts.py
 
       - name: Commit & push if changed
         run: |

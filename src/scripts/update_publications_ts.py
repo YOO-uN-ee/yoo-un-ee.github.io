@@ -5,7 +5,7 @@ from datetime import datetime
 from scholarly import scholarly
 
 SCHOLAR_ID = "RpcilLMAAAAJ"
-OUT_PATH = os.environ.get("OUT_PATH", "../data/publications.generated.ts")
+OUT_PATH = os.environ.get("OUT_PATH", "src/data/publications.generated.ts")
 
 if not SCHOLAR_ID:
     raise SystemExit("Missing SCHOLAR_ID env var (the `user=` value from your Scholar profile URL).")
