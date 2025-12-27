@@ -7,12 +7,19 @@ on:
     branches: [main]
   # Allows you to run this workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
+  schedule:
+    # Runs at 03:30 UTC daily (cron is UTC)
+    - cron: "10 0 * * *"
 
 # Allow this job to clone the repo and create a page deployment
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
+
+concurrency:
+  group: scholar-update
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -22,6 +29,32 @@ jobs:
         uses: actions/checkout@v4
       - name: Install, build, and upload your site output
         uses: withastro/action@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install scholarly
+
+      - name: Update publications file
+        run: |
+          python scripts/update_scholar_publications.py
+
+      - name: Commit & push if changed
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: update publications from Google Scholar"
+          git push
         # with:
               # path: . # The root location of your Astro project inside the repository. (optional)
               # node-version: 22 # The specific version of Node that should be used to build your site. Defaults to 22. (optional)
