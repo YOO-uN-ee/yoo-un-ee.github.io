@@ -1,11 +1,11 @@
 // AUTO-GENERATED FILE. DO NOT EDIT.
-// Generated at: 2025-12-27T18:35:10.596817Z
+// Generated at: 2025-12-30T02:24:44.058302Z
 
 export const publications = [
   {
     title: 'Exploiting LLMs and Semantic Technologies to Build a Knowledge Graph of Historical Mining Data',
     authors: 'Craig A Knoblock and Binh Vu and Basel Shbita and Yao-Yi Chiang and Pothula Punith Krishna and Xiao Lin and Goran Muric and Jiyoon Pyo and Adriana Trejo-Sheu and Meng Ye',
-    journal: '',
+    journal: 'Springer Nature Switzerland',
     time: '2025',
     link: 'https://link.springer.com/chapter/10.1007/978-3-032-09530-5_26',
     github: undefined,
@@ -25,7 +25,7 @@ export const publications = [
   {
     title: 'Augmenting Human-Centered Racial Covenant Detection and Georeferencing with Plug-and-Play NLP Pipelines',
     authors: 'Jiyoon Pyo and Yuankun Jiao and Yao-Yi Chiang and Michael Corey',
-    journal: '',
+    journal: 'Proceedings of the 1st ACM SIGSPATIAL International Workshop on Human …',
     time: '2025',
     link: 'https://dl.acm.org/doi/abs/10.1145/3764917.3771333',
     github: undefined,
@@ -35,7 +35,7 @@ export const publications = [
   {
     title: 'Leveraging Large Language Models for Generating Labeled Mineral Site Record Linkage Data',
     authors: 'Jiyoon Pyo and Yao-Yi Chiang',
-    journal: '',
+    journal: 'Proceedings of the 7th ACM SIGSPATIAL International Workshop on AI for …',
     time: '2024',
     link: 'https://dl.acm.org/doi/abs/10.1145/3687123.3698298',
     github: undefined,
@@ -45,7 +45,7 @@ export const publications = [
   {
     title: 'Detection and replacement of neologisms for translation',
     authors: 'Jiyoon Pyo',
-    journal: '',
+    journal: 'The Cooper Union for the Advancement of Science and Art',
     time: '2023',
     link: 'https://search.proquest.com/openview/1be717392643ea691fa02b3821920bd7/1?pq-origsite=gscholar&cbl=18750&diss=y',
     github: undefined,
