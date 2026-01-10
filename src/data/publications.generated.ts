@@ -1,5 +1,5 @@
 // AUTO-GENERATED FILE. DO NOT EDIT.
-// Generated at: 2026-01-05T02:38:13.059554Z
+// Generated at: 2026-01-10T02:22:50.939521Z
 
 export const publications = [
   {
