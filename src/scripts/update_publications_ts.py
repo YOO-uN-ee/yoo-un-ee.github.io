@@ -4,12 +4,127 @@ import os
 import time
 from datetime import datetime
 from scholarly import scholarly
+import bibtexparser
+import requests
+from urllib.parse import quote
 
+DOI_RE = re.compile(r"(10\.\d{4,9}/[-._;()/:A-Z0-9]+)", re.I)
 SCHOLAR_ID = "RpcilLMAAAAJ"
 OUT_PATH = os.environ.get("OUT_PATH", "src/data/publications.generated.ts")
 
 if not SCHOLAR_ID:
     raise SystemExit("Missing SCHOLAR_ID env var (the `user=` value from your Scholar profile URL).")
+
+def extract_doi(text: str) -> str:
+    if not text:
+        return ""
+    m = DOI_RE.search(text)
+    return m.group(1) if m else ""
+
+def crossref_lookup(doi: str, mailto: str = "") -> dict:
+    if not doi:
+        return {}
+    url = "https://api.crossref.org/works/" + quote(doi, safe="")
+    params = {"mailto": mailto} if mailto else {}
+    r = requests.get(url, params=params, timeout=20)
+    r.raise_for_status()
+    return r.json().get("message", {}) or {}
+
+def venue_from_crossref(msg: dict) -> str:
+    # Crossref: container-title is usually what you want for proceedings/books/journals
+    ct = msg.get("container-title") or []
+    if ct and isinstance(ct, list) and ct[0].strip():
+        return ct[0].strip()
+    # Sometimes "event" exists for conference metadata
+    ev = msg.get("event") or {}
+    name = (ev.get("name") or "").strip()
+    return name
+
+def bibtex_to_fields(bibtex_str: str) -> dict:
+    """Parse a single-entry BibTeX string into a normalized dict of fields."""
+    if not bibtex_str:
+        return {}
+    try:
+        db = bibtexparser.loads(bibtex_str)
+    except Exception:
+        return {}
+    if not getattr(db, "entries", None):
+        return {}
+
+    e = db.entries[0]
+    out = {}
+    for k, v in e.items():
+        if v is None:
+            continue
+        out[str(k).lower().strip()] = str(v).strip()
+    return out
+
+def get_bibtex_with_fallback(p_full: dict, title: str) -> str:
+    # 1) Try directly
+    try:
+        s = scholarly.bibtex(p_full)
+        if s:
+            return s
+    except Exception as e:
+        pass
+
+    # 2) Fallback: search by title (search results often have the needed IDs)
+    try:
+        q = scholarly.search_pubs(title)
+        pub2 = next(q, None)
+        if not pub2:
+            return ""
+        pub2 = scholarly.fill(pub2)
+        return scholarly.bibtex(pub2) or ""
+    except Exception:
+        return ""
+
+
+def has_good_venue_fields(fields: dict) -> bool:
+    return any((fields.get(k) or "").strip() for k in ("booktitle", "journal", "eventtitle", "series"))
+
+
+def pick_venue_from_bibtex(fields: dict, fallback: str = "") -> str:
+    """
+    Prefer booktitle for proceedings/chapters (fixes Springer chapters),
+    then journal, then venue-ish, then publisher.
+    """
+    for k in ("booktitle", "journal", "eventtitle", "container-title", "series"):
+        v = (fields.get(k) or "").strip()
+        if v:
+            return v
+
+    # Only use publisher as a last resort
+    pub = (fields.get("publisher") or "").strip()
+    if pub:
+        return pub
+
+    return fallback or ""
+
+def pick_year_from_bibtex(fields: dict, fallback: str = "") -> str:
+    y = (fields.get("year") or "").strip()
+    if y:
+        return y
+    # Sometimes date like 2025-10-01
+    date = (fields.get("date") or "").strip()
+    if len(date) >= 4 and date[:4].isdigit():
+        return date[:4]
+    return fallback or ""
+
+def pick_authors_from_bibtex(fields: dict, fallback: str = "") -> str:
+    a = (fields.get("author") or "").strip()
+    if a:
+        # Optional: turn "A and B and C" into your preferred format.
+        return a.replace(" and ", " and ")
+    return fallback or ""
+
+def pick_title_from_bibtex(fields: dict, fallback: str = "") -> str:
+    t = (fields.get("title") or "").strip()
+    return t or fallback or ""
+
+def pick_url_from_bibtex(fields: dict, fallback: str = "") -> str:
+    # BibTeX may have url; otherwise use fallback pub_url you already have
+    return (fields.get("url") or fallback or "").strip()
 
 def ts_escape(s: str) -> str:
     """Escape a Python string into a safe TS single-quoted string literal."""
@@ -30,23 +145,17 @@ def pick_year(pub: dict) -> str:
 def pick_venue(pub: dict) -> str:
     bib = pub.get("bib", {}) or {}
 
-    # 1) Try structured fields first (when available)
-    for k in ("venue", "journal", "booktitle", "conference", "publisher", "organization", "institution"):
-        v = (bib.get(k) or "").strip()
-        if v:
-            return v
-
     # 2) Fallback: parse the citation string (this is commonly present)
     cit = (bib.get("citation") or "").strip()
     if not cit:
         return ""
-
+    
     # Normalize whitespace
     cit = re.sub(r"\s+", " ", cit).strip()
 
     # If it's an arXiv-style citation, collapse to "arXiv"
-    if "arxiv" in cit.lower():
-        return "arXiv"
+    # if "arxiv" in cit.lower():
+    #     return "arXiv"
 
     # Common pattern: "Venue, YEAR"  -> take before first comma
     head = cit.split(",", 1)[0].strip()
@@ -57,6 +166,8 @@ def pick_venue(pub: dict) -> str:
     # Remove " ... 2025" or " ... (2025)" or " ... pp. 12-34"
     cit2 = re.sub(r"\s*\(?\b(19|20)\d{2}\b\)?\s*$", "", cit).strip()
     cit2 = re.sub(r"\s+\bpp?\.\s*\d+.*$", "", cit2).strip()
+
+    print(cit2)
     return cit2
 
 def pick_authors(pub: dict) -> str:
@@ -79,27 +190,55 @@ def main():
 
     pubs = []
     for p in (author.get("publications") or []):
-        # Filling each pub adds requests; keep schedule infrequent.
         try:
             p_full = scholarly.fill(p)
         except Exception:
             p_full = p
 
+        # 1) Try BibTeX (best for full venue + correct booktitle)
+        bibtex_str = ""
+        fields = {}
+        try:
+            bibtex_str = get_bibtex_with_fallback(p_full, title=pick_title(p_full))
+            fields = bibtex_to_fields(bibtex_str)
+
+            # inside loop, right after you compute `fields`:
+            if not fields:
+                print(f"[bibtex] EMPTY fields for: {title}")
+            elif not has_good_venue_fields(fields):
+                print(f"[bibtex] NO venue keys for: {title} | keys={sorted(fields.keys())[:15]} ...")
+        except Exception:
+            fields = {}
+
+        # 2) Fall back to your current pickers if BibTeX fails
         title = pick_title(p_full)
         if not title:
             continue
 
+        fallback_authors = pick_authors(p_full)
+        fallback_year = pick_year(p_full)
+        fallback_venue = pick_venue(p_full)
+        fallback_link = pick_link(p_full)
+
         record = {
-            "title": title,
-            "authors": pick_authors(p_full),
-            "journal": pick_venue(p_full),
-            "time": pick_year(p_full),
-            "link": pick_link(p_full) or None,
-            # you don't get these reliably from Scholar; leave empty for your UI
+            "title": pick_title_from_bibtex(fields, fallback=title),
+            "authors": pick_authors_from_bibtex(fields, fallback=fallback_authors),
+            "journal": pick_venue_from_bibtex(fields, fallback=fallback_venue),
+            "time": pick_year_from_bibtex(fields, fallback=fallback_year),
+            "link": pick_url_from_bibtex(fields, fallback=fallback_link) or None,
             "github": None,
             "slides": None,
-            "abstract": "",  # Scholar usually doesn't provide abstract; keep empty
+            "abstract": "",
         }
+
+        if (not record["journal"]) or ("…" in record["journal"]):
+            doi = extract_doi(record["link"] or "") or extract_doi(bibtex_str)
+            if doi:
+                msg = crossref_lookup(doi, mailto=os.environ.get("CROSSREF_MAILTO", ""))
+                v = venue_from_crossref(msg)
+                if v:
+                    record["journal"] = v
+
         pubs.append(record)
         time.sleep(1.0)
 
