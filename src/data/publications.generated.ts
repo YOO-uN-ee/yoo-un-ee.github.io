@@ -1,5 +1,5 @@
 // AUTO-GENERATED FILE. DO NOT EDIT.
-// Generated at: 2026-01-15T22:25:09.753634Z
+// Generated at: 2026-01-20T02:29:42.821121Z
 
 export const publications = [
   {
@@ -34,7 +34,7 @@ export const publications = [
   },
   {
     title: 'Leveraging Large Language Models for Generating Labeled Mineral Site Record Linkage Data',
-    authors: 'Pyo, Jiyoon and Chiang, Yao-Yi',
+    authors: 'Jiyoon Pyo and Yao-Yi Chiang',
     journal: 'Proceedings of the 7th ACM SIGSPATIAL International Workshop on AI for Geographic Knowledge Discovery',
     time: '2024',
     link: 'https://dl.acm.org/doi/abs/10.1145/3687123.3698298',
