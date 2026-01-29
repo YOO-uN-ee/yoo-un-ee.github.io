@@ -1,10 +1,10 @@
 // AUTO-GENERATED FILE. DO NOT EDIT.
-// Generated at: 2026-01-27T02:42:16.132952Z
+// Generated at: 2026-01-29T03:01:43.197436Z
 
 export const publications = [
   {
     title: 'Exploiting LLMs and Semantic Technologies to Build a Knowledge Graph of Historical Mining Data',
-    authors: 'Knoblock, Craig A and Vu, Binh and Shbita, Basel and Chiang, Yao-Yi and Krishna, Pothula Punith and Lin, Xiao and Muric, Goran and Pyo, Jiyoon and Trejo-Sheu, Adriana and Ye, Meng',
+    authors: 'Craig A Knoblock and Binh Vu and Basel Shbita and Yao-Yi Chiang and Pothula Punith Krishna and Xiao Lin and Goran Muric and Jiyoon Pyo and Adriana Trejo-Sheu and Meng Ye',
     journal: 'International Semantic Web Conference',
     time: '2025',
     link: 'https://link.springer.com/chapter/10.1007/978-3-032-09530-5_26',
@@ -34,7 +34,7 @@ export const publications = [
   },
   {
     title: 'Leveraging Large Language Models for Generating Labeled Mineral Site Record Linkage Data',
-    authors: 'Jiyoon Pyo and Yao-Yi Chiang',
+    authors: 'Pyo, Jiyoon and Chiang, Yao-Yi',
     journal: 'Proceedings of the 7th ACM SIGSPATIAL International Workshop on AI for Geographic Knowledge Discovery',
     time: '2024',
     link: 'https://dl.acm.org/doi/abs/10.1145/3687123.3698298',
