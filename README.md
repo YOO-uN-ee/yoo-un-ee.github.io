@@ -1,4 +1,4 @@
-# Javier Castillo - Portafolio
+# Jiyoon Pyo - Portafolio
 
 Un portafolio moderno, responsive y bilingüe construido con **Astro** y **Tailwind CSS**. Presenta experiencia profesional, habilidades y proyectos como Desarrollador Full Stack.
 
@@ -185,4 +185,4 @@ Este proyecto es de código abierto y está disponible bajo la Licencia MIT.
 
 ---
 
-**Hecho con ❤️ por Javier Castillo | 2026**
+**Hecho con ❤️ por Jiyoon Pyo | 2026**

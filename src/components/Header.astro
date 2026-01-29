@@ -12,6 +12,9 @@ const currentPage = Astro.url.pathname;
 			<a href="/projects" class={`text-sm font-medium transition-colors whitespace-nowrap ${currentPage === '/projects' ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`} data-en="Projects" data-es="Proyectos">
 				Projects
 			</a>
+			<a href="/publications" class={`text-sm font-medium transition-colors whitespace-nowrap ${currentPage === '/publications' ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`} data-en="Publications" data-es="Proyectos">
+				Publications
+			</a>
 			<a href="/work" class={`text-sm font-medium transition-colors whitespace-nowrap ${currentPage === '/work' ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`} data-en="Work" data-es="Trabajo">
 				Work
 			</a>
@@ -24,9 +27,9 @@ const currentPage = Astro.url.pathname;
 
 		<!-- Language and Theme Toggles -->
 		<div class="flex items-center gap-2">
-			<button id="lang-btn" onclick="window.toggleLang()" class="px-2 py-1 text-xs font-bold rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer whitespace-nowrap">
+			<!-- <button id="lang-btn" onclick="window.toggleLang()" class="px-2 py-1 text-xs font-bold rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer whitespace-nowrap">
 				EN
-			</button>
+			</button> -->
 
 			<button onclick="window.toggleTheme()" class="p-1 sm:p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer flex-shrink-0" aria-label="Toggle theme">
 				<svg class="w-4 h-4 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,6 +59,9 @@ const currentPage = Astro.url.pathname;
 		</a>
 		<a href="/projects" onclick="window.closeMobileMenu()" class={`block px-3 py-2 rounded-lg transition-colors font-medium text-sm ${currentPage === '/projects' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'}`} data-en="Projects" data-es="Proyectos">
 			Projects
+		</a>
+		<a href="/publications" onclick="window.closeMobileMenu()" class={`block px-3 py-2 rounded-lg transition-colors font-medium text-sm ${currentPage === '/publications' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'}`} data-en="Publications" data-es="Proyectos">
+			Publications
 		</a>
 		<a href="/work" onclick="window.closeMobileMenu()" class={`block px-3 py-2 rounded-lg transition-colors font-medium text-sm ${currentPage === '/work' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'}`} data-en="Work" data-es="Trabajo">
 			Work
