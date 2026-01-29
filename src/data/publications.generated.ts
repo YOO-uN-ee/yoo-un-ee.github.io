@@ -1,5 +1,5 @@
 // AUTO-GENERATED FILE. DO NOT EDIT.
-// Generated at: 2025-12-27T19:41:44.928399Z
+// Generated at: 2026-01-29T03:01:43.197436Z
 
 export const publications = [
   {
@@ -25,7 +25,11 @@ export const publications = [
   {
     title: 'Augmenting Human-Centered Racial Covenant Detection and Georeferencing with Plug-and-Play NLP Pipelines',
     authors: 'Jiyoon Pyo and Yuankun Jiao and Yao-Yi Chiang and Michael Corey',
+<<<<<<< HEAD
     journal: 'Proceedings of the 1st ACM SIGSPATIAL International Workshop on Human',
+=======
+    journal: 'Proceedings of the 1st ACM SIGSPATIAL International Workshop on Human-Centered Geospatial Computing',
+>>>>>>> 1d9f7b07262e4fad096df48c61864b4bfd2404c6
     time: '2025',
     link: 'https://dl.acm.org/doi/abs/10.1145/3764917.3771333',
     github: undefined,
@@ -34,8 +38,13 @@ export const publications = [
   },
   {
     title: 'Leveraging Large Language Models for Generating Labeled Mineral Site Record Linkage Data',
+<<<<<<< HEAD
     authors: 'Jiyoon Pyo and Yao-Yi Chiang',
     journal: 'Proceedings of the 7th ACM SIGSPATIAL International Workshop on AI for',
+=======
+    authors: 'Pyo, Jiyoon and Chiang, Yao-Yi',
+    journal: 'Proceedings of the 7th ACM SIGSPATIAL International Workshop on AI for Geographic Knowledge Discovery',
+>>>>>>> 1d9f7b07262e4fad096df48c61864b4bfd2404c6
     time: '2024',
     link: 'https://dl.acm.org/doi/abs/10.1145/3687123.3698298',
     github: undefined,
