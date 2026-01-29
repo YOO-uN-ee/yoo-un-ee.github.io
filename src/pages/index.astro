@@ -14,7 +14,7 @@ const translations = {
     es: "Jiyoon Pyo" 
   },
   description: { 
-    en: "Technologist in Information Systems and Full Stack Developer with more than 2 years of experience, specialized in creating modern, scalable and user-centered solutions.", 
+    en: "Ph.D. candidate in Computer Science at University of Minnesota-Twin Cities", 
     es: "Tecnólogo en Sistemas de información y Desarrollador Full Stack con más de 2 años de experiencia, especializado en crear soluciones modernas, escalables y centradas en el usuario." 
   },
   availability: {
@@ -56,9 +56,9 @@ const translations = {
 						<img src={heroPhoto.src} alt="Jiyoon Pyo" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
 						<span class="text-2xl sm:text-3xl md:text-4xl text-gray-500 dark:text-gray-400 hidden">📷</span>
 					</div>
-					<div class="animated-border always-visible px-3 sm:px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 h-fit">
+					<!-- <div class="animated-border always-visible px-3 sm:px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 h-fit">
 						<p class="text-xs sm:text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap" data-en={translations.availability.en} data-es={translations.availability.es}>{translations.availability.en}</p>
-					</div>
+					</div> -->
 				</div>
 				<div>
 					<p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-2" data-en={translations.greeting.en} data-es={translations.greeting.es}>{translations.greeting.en}</p>
@@ -83,7 +83,22 @@ const translations = {
 		<section class="max-w-3xl mx-auto py-12 sm:py-16 border-t border-gray-200 dark:border-gray-700 parallax-section fade-in px-2 sm:px-0">
 			<h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6 sm:mb-8" data-en={translations.about.en} data-es={translations.about.es}>{translations.about.en}</h2>
 			<div class="space-y-3 sm:space-y-4 text-base sm:text-lg leading-relaxed text-gray-600 dark:text-gray-400" data-en={translations.aboutDesc.en} data-es={translations.aboutDesc.es}>
-				{translations.aboutDesc.en}
+				<!-- {translations.aboutDesc.en} -->
+				<p>
+					I am a third-year Ph.D. student in Computer Science at the <a href="https://twin-cities.umn.edu/" class="hover:text-accent text-secondary">University of Minnesota–Twin Cities</a>, where I am a member of the <a href="https://knowledge-computing.github.io/" class="hover:text-accent text-secondary">Knowledge Computing Lab</a> advised by <a href="https://yaoyichi.github.io/" class="hover:text-accent text-secondary">Prof. Yao-Yi Chiang</a>.
+				</p>
+				<p>
+					My research focuses on advancing the understanding of how large language models (LLMs) and large vision-language models (LVLMs) process geospatial information.
+					I am especially interested in the capabilities and limitations of these models in performing geospatial reasoning tasks, such as interpreting topological relationships, recognizing spatial features, and engaging in multi-hop reasoning over map content.
+					My current work involves developing benchmarks and evaluation methods to assess LVLM map-reasoning abilities, and exploring techniques to enhance their spatial understanding and reliability on domain-specific tasks.
+					Beyond my current work, I am also interested about linguistic variations, including regional terminology differences and cultural influences on data and model interpretation.
+				</p>
+				<p>
+					I earned my M.Sc. in Computer Science from the University of Minnesota and both my B.Eng and M.Eng in Electrical Engineering from <a href="https://cooper.edu/" class="hover:text-accent text-secondary">The Cooper Union</a>. 
+					My Master's thesis, <a href="https://www.proquest.com/dissertations-theses/detection-replacement-neologisms-translation/docview/2811800738/se-2" class="hover:text-accent text-secondary">Detection and Replacement of Neologisms for Translation</a>, supervised by <a href="https://engfac.cooper.edu/sable2" class="hover:text-accent text-secondary">Dr. Carl Sable</a>, explored methods for identifying newly coined terms to improve machine translation quality. 
+					Additionally, I worked as a research assistant in the <a href="https://lvl.ru.is/" class="hover:text-accent text-secondary">Language and Voice Lab</a> at Reykjavik University with <a href="https://staff.ru.is/stefanola/" class="hover:text-accent text-secondary">Dr. Stefán Ólafsson</a>, where I helped evaluate multilingual language models and their effectiveness for lower-resourced languages.
+				</p>
+
 			</div>
 		</section>
 
