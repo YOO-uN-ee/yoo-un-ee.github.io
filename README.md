@@ -28,7 +28,7 @@ portfolio/
 │   │   └── Layout.astro      # Layout base con scripts globales
 │   ├── pages/
 │   │   ├── index.astro       # Página de inicio con perfil
-│   │   ├── work.astro        # Línea de tiempo de experiencia laboral
+│   │   ├── education.astro        # Línea de tiempo de experiencia laboral
 │   │   ├── publications.astro    # Vitrina de proyectos
 │   │   └── contact.astro     # Información de contacto
 │   ├── assets/
@@ -109,7 +109,7 @@ El toggle de modo oscuro/claro está disponible en el encabezado. La preferencia
 Edita los siguientes archivos para personalizar tu portafolio:
 
 - `src/pages/index.astro` - Perfil, sobre mí y tech stack
-- `src/pages/work.astro` - Entradas de experiencia laboral
+- `src/pages/education.astro` - Entradas de experiencia laboral
 - `src/pages/contact.astro` - Información de contacto y enlaces sociales
 - `src/components/Header.astro` - Estructura de navegación
 
@@ -180,7 +180,7 @@ Este proyecto es de código abierto y está disponible bajo la Licencia MIT.
 ## 🙏 Reconocimientos
 
 - [Astro](https://astro.build) - Generador de sitios estáticos
-- [Tailwind CSS](https://tailwindcss.com) - Framework CSS orientado a utilidades
+- [Tailwind CSS](https://tailwindcss.com) - Frameeducation CSS orientado a utilidades
 - Inspirado en principios modernos de diseño web
 
 ---
