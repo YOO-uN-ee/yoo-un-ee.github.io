@@ -1,0 +1,90 @@
+---
+import Layout from '../layouts/Layout.astro'
+
+import { profile, template } from '@/settings'
+import { publications } from '@/data/cv'
+import { getCollection } from 'astro:content';
+import ProfilePictures from '@/assets/profile_pictures.jpg'
+import Hero from '@/components/ui/Hero.astro'
+import Grid from '@/components/ui/Grid.astro'
+import ArticleList from '@/components/ui/ArticleList.astro'
+import NewsList from '@/components/ui/NewsList.astro'
+
+const { fullName, title, institute, research_areas } = profile
+
+const newsEntries = await getCollection("news");
+
+const posts = newsEntries
+	.map(post => ({
+		title: post.data.title,
+		date: post.data.date,
+		badge: post.data.tags[0],
+		slug: `${template.base}/news/${post.id}`,
+	}))
+	.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
+// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+---
+
+<Layout>
+	<!-- Hero Section -->
+	<section class='flex items-center gap-12 border-b pb-12'>
+		<Hero
+			fullName={fullName}
+			title={title}
+			institute={institute}
+			profilePicture={ProfilePictures}
+		/>
+	</section>
+
+	<!-- Research Areas -->
+	<!-- <section class='py-12 border-b'>
+		<Grid gridTitle='Research Areas' gridItems={research_areas} />
+	</section> -->
+
+	<!-- News Sections -->
+	<!-- <section class='py-12 border-b'>
+		<h1 class="text-3xl font-bold mb-8">News</h1>
+		<ul class="space-y-4">
+		  {
+			posts.map(post => (
+			  <li>
+				<div class="flex flex-col">
+				  {
+					post.body ? (
+					  <a
+						href={post.slug}
+						class="text-xl font-semibold mb-2 hover:text-accent"
+					  >
+						{post.title}
+					  </a>
+					) : (
+					  <span class="text-xl font-semibold mb-2">
+						{post.title}
+					  </span>
+					)
+				  }
+				  <time datetime={post.date}>
+					{new Date(post.date).toLocaleDateString('en-US', {
+					  year: 'numeric',
+					  month: 'long',
+					  day: 'numeric',
+					})}
+				  </time>
+				</div>
+			  </li>
+			))
+		  }
+		</ul>
+	  </section> -->
+
+	<!-- <section class='py-12 border-t'>
+		<NewsList listTitle='News' listItems={posts} />
+	</section> -->
+
+	<!-- Recent Publications -->
+	<!-- <section class='py-12 border-t'>
+		<ArticleList listTitle='Recent Publications' listItems={publications} />
+	</section> -->
+</Layout>

@@ -1,103 +1,188 @@
-# Astro Academia Documentation
+# Javier Castillo - Portafolio
 
-## What is Astro Academia?
+Un portafolio moderno, responsive y bilingüe construido con **Astro** y **Tailwind CSS**. Presenta experiencia profesional, habilidades y proyectos como Desarrollador Full Stack.
 
-Astro Academia is a personal academic website built using Astro, a modern static site generator. The website is designed to showcase academic achievements, research papers, blog posts, and a CV. It is fast, responsive, and easy to maintain, making it an ideal platform for academics and researchers to present their work.
+🌐 **Sitio en vivo:** [Ver Portafolio](https://javiercastillo.dev)
 
-If you find Astro Academia useful or appreciate my work, consider supporting me! Your support helps keep this project maintained and encourages further development. 🚀✨
+## ✨ Características
 
-<a href="https://buymeacoffee.com/maiobarbero" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-yellow.png" alt="Buy Me A Coffee" height="41" width="174"></a>
-<a href="https://www.producthunt.com/products/astro-academia?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-astro&#0045;academia" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1026976&theme=light&t=1760776422941" alt="Astro&#0032;Academia - Academic&#0032;website&#0032;template | Product Hunt" style="width: 189px; height: 41px;" width="189" height="41" /></a>
+- 🌍 **Soporte Bilingüe** - Inglés y Español con cambio de idioma fluido
+- 🌙 **Modo Oscuro** - Toggle de tema claro/oscuro con persistencia en localStorage
+- 📱 **Totalmente Responsivo** - Diseño mobile-first con menú hamburguesa para navegación móvil
+- ⚡ **Alto Rendimiento** - Construido con Astro para generación de sitios estáticos optimizada
+- 🎨 **Diseño Moderno** - Tailwind CSS con animaciones personalizadas y efectos de gradiente
+- 🌈 **Animaciones Arcoíris** - Efectos de borde animado en elementos interactivos
+- ♿ **Accesible** - HTML semántico y etiquetas ARIA para mejor accesibilidad
+- 📊 **Línea de Tiempo Laboral** - Experiencia profesional con descripciones multilingües
+- 🔗 **Integración Social** - Enlaces a GitHub, LinkedIn, Email y Teléfono (SMS)
 
-## How to use it
+## 🏗️ Estructura del Proyecto
 
-Fork this repository to create your new website starting from this template.
+```
+portfolio/
+├── src/
+│   ├── components/
+│   │   ├── Header.astro      # Navegación con toggles de idioma/tema
+│   │   ├── Footer.astro      # Pie de página con tech stack
+│   ├── layouts/
+│   │   └── Layout.astro      # Layout base con scripts globales
+│   ├── pages/
+│   │   ├── index.astro       # Página de inicio con perfil
+│   │   ├── work.astro        # Línea de tiempo de experiencia laboral
+│   │   ├── projects.astro    # Vitrina de proyectos
+│   │   └── contact.astro     # Información de contacto
+│   ├── assets/
+│   │   ├── photo.jpeg        # Foto de perfil
+│   │   ├── Astro_dark.svg    # Logo de Astro
+│   │   ├── Astro_light.svg   # Logo de Astro (claro)
+│   │   └── tailwindcss.svg   # Logo de Tailwind CSS
+│   └── styles/
+│       └── global.css        # Animaciones y utilidades personalizadas
+├── public/
+│   └── favicon.svg           # Favicon del sitio
+├── astro.config.mjs          # Configuración de Astro
+├── tailwind.config.mjs       # Configuración de Tailwind CSS
+├── tsconfig.json             # Configuración de TypeScript
+└── package.json              # Dependencias del proyecto
 
-## How to Create a CV Using the `cv.ts` File
-
-The `cv.ts` file located in the `src/data/` directory is used to define the structure and content of your CV. This file exports an object containing various sections of your CV, such as education, experience, publications, and more.
-
-### Example Structure of `cv.ts`
-
-```typescript
-export const cv = {
-  education: [
-    {
-      degree: "Ph.D. in Computer Science",
-      institution: "University of Example",
-      year: "2020",
-    },
-    {
-      degree: "M.Sc. in Computer Science",
-      institution: "University of Example",
-      year: "2016",
-    },
-  ],
-  experience: [
-    {
-      title: "Research Scientist",
-      company: "Example Research Lab",
-      year: "2021-Present",
-    },
-    {
-      title: "Software Engineer",
-      company: "Tech Company",
-      year: "2016-2021",
-    },
-  ],
-  // Add more sections as needed
-};
 ```
 
-To create or update your CV, modify the `cv.ts` file with your personal information and achievements. The CV will be automatically rendered on the CV page of your website.
+## 🚀 Primeros Pasos
 
-## How to Use the `settings.ts` File
+### Requisitos Previos
 
-The `settings.ts` file located in the `src/` directory is used to configure various settings for your Astro Academia website. This file exports an object containing settings such as site title, description, social media links, and more.
+- Node.js 16+ 
+- npm o yarn
 
-### Example Structure of `settings.ts`
+### Instalación
 
-```typescript
-export const settings = {
-  siteTitle: "Astro Academia",
-  siteDescription: "A personal academic website built with Astro.",
-  socialLinks: {
-    twitter: "https://twitter.com/yourusername",
-    github: "https://github.com/yourusername",
-    linkedin: "https://linkedin.com/in/yourusername",
-  },
-  // Add more settings as needed
-};
+1. Clona el repositorio:
+```bash
+git clone https://github.com/JavierDvlpr/portfolio.git
+cd portfolio
 ```
 
-To customize your website settings, modify the `settings.ts` file with your desired values. These settings will be used throughout your website to display the appropriate information.
+2. Instala las dependencias:
+```bash
+npm install
+```
 
-## Where to Find the Blog Collection and Where to Add New Blog Posts
+3. Inicia el servidor de desarrollo:
+```bash
+npm run dev
+```
 
-The blog collection is located in the `src/content/BlogPosts/` directory. Each blog post is a Markdown file with a `.md` extension. The blog posts are named sequentially (e.g., `post1.md`, `post2.md`, etc.).
+Abre [http://localhost:4321](http://localhost:4321) en tu navegador para ver tu portafolio.
 
-### Adding a New Blog Post
+## 🛠️ Stack de Tecnología
 
-1. Navigate to the `src/content/BlogPosts/` directory.
-2. Create a new Markdown file for your blog post (e.g., `post1.md`).
-3. Add the content of your blog post using Markdown syntax. Include frontmatter at the top of the file to define metadata such as title, date, and tags.
+**Frontend:**
+- Astro
+- React (opcional, para componentes dinámicos)
+- TypeScript
+- Tailwind CSS
 
-### Example Blog Post (`post11.md`)
+**Características:**
+- Diseño Responsivo (Mobile-First)
+- Soporte Dark Mode
+- Multilingüe (i18n)
+- Animaciones CSS Personalizadas
 
-```markdown
+## 📝 Configuración
+
+### Sistema de Idioma
+
+El portafolio utiliza un sistema de idioma personalizado con atributos `data-en` y `data-es`. La preferencia de idioma se almacena en localStorage.
+
+Para agregar traducciones:
+1. Añade atributos `data-en` y `data-es` a los elementos
+2. La función `updatePageContent()` maneja la visualización según el idioma actual
+
+### Sistema de Tema
+
+El toggle de modo oscuro/claro está disponible en el encabezado. La preferencia de tema se persiste en localStorage y se sincroniza entre cargas de página.
+
+## 🎨 Personalización
+
+### Actualizar Información Personal
+
+Edita los siguientes archivos para personalizar tu portafolio:
+
+- `src/pages/index.astro` - Perfil, sobre mí y tech stack
+- `src/pages/work.astro` - Entradas de experiencia laboral
+- `src/pages/contact.astro` - Información de contacto y enlaces sociales
+- `src/components/Header.astro` - Estructura de navegación
+
+### Modificar Colores
+
+Edita `tailwind.config.mjs` para personalizar el esquema de colores. El portafolio utiliza:
+- Fondo: white/gray-950
+- Texto: gray-900/white (consciente del dark mode)
+- Acentos: gradientes arcoíris en animaciones
+
+### Actualizar Visualización de Tech Stack
+
+El ticker de tecnologías en la página de inicio se puede editar en `src/pages/index.astro`. Modifica el array de tecnologías con las tuyas propias.
+
+## 📦 Compilar e Implementar
+
+### Compilar para Producción
+
+```bash
+npm run build
+```
+
+Esto genera un sitio estático en el directorio `dist/`.
+
+### Vista Previa de la Compilación
+
+```bash
+npm run preview
+```
+
+### Implementar en Vercel
+
+El proyecto está optimizado para Vercel:
+
+```bash
+npm install -g vercel
+vercel
+```
+
+### Implementar en Netlify
+
+1. Conecta tu repositorio de GitHub a Netlify
+2. Establece comando de compilación: `npm run build`
+3. Establece directorio de publicación: `dist/`
+4. ¡Implementa!
+
+## 🔧 Comandos Disponibles
+
+| Comando | Propósito |
+|---------|-----------|
+| `npm run dev` | Inicia el servidor de desarrollo local |
+| `npm run build` | Compila el sitio para producción |
+| `npm run preview` | Visualiza la compilación de producción |
+| `npm run astro add` | Añade integraciones de Astro |
+| `npm run astro check` | Verifica tipos en tu código |
+
+## 📧 Contacto
+
+- **Email:** javiercastillo.5445@gmail.com
+- **GitHub:** [@JavierDvlpr](https://github.com/JavierDvlpr)
+- **LinkedIn:** [javiercastillodev](https://www.linkedin.com/in/javiercastillodev/)
+- **Teléfono:** +57 3054077706
+
+## 📄 Licencia
+
+Este proyecto es de código abierto y está disponible bajo la Licencia MIT.
+
+## 🙏 Reconocimientos
+
+- [Astro](https://astro.build) - Generador de sitios estáticos
+- [Tailwind CSS](https://tailwindcss.com) - Framework CSS orientado a utilidades
+- Inspirado en principios modernos de diseño web
+
 ---
-title: "New Blog Post"
-date: "2023-10-01"
-tags: ["research", "astro"]
-excerpt: "Some short paragraphs"
----
 
-# New Blog Post
-
-This is the content of the new blog post. Write your article here using Markdown syntax.
-```
-
-Once you have added the new blog post, it will be automatically included in the blog collection and displayed on the blog page of your website.
-
-## Deploy
-The template provides a workflow to deploy the website on Github pages as a static website.
+**Hecho con ❤️ por Javier Castillo | 2026**

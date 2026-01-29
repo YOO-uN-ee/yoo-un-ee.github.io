@@ -1,0 +1,20 @@
+import os, requests
+
+API_KEY = "ec0435a8d92c6b98864c982d1617d19da700419d0a229356281602ab82ebc451"
+AUTHOR_ID = "RpcilLMAAAAJ"
+
+r = requests.get(
+    "https://serpapi.com/search",
+    params={"engine": "google_scholar_author", "author_id": AUTHOR_ID, "api_key": API_KEY},
+    timeout=30,
+)
+r.raise_for_status()
+data = r.json()
+
+# Depending on endpoint/engine, publications may be under something like:
+# data["articles"] or data["articles_results"] (check actual JSON)
+dict_keys(['search_metadata', 'search_parameters', 'author', 'articles', 'cited_by', 'public_access'])
+{'search_metadata': {'id': '69503854392e0becdef16ecd', 'status': 'Success', 
+'articles': [{'title': 'Leveraging Large Language Models for Generating Labeled Mineral Site Record Linkage Data', 'link': 'https://scholar.google.com/citations?view_op=view_citation&hl=en&user=RpcilLMAAAAJ&citation_for_view=RpcilLMAAAAJ:u-x6o8ySG0sC', 'citation_id': 'RpcilLMAAAAJ:u-x6o8ySG0sC', 'authors': 'J Pyo, YY Chiang', 'publication': 'Proceedings of the 7th ACM SIGSPATIAL International Workshop on AI for …, 2024', 'cited_by': {'value': 4, 'link': 'https://scholar.google.com/scholar?oi=bibs&hl=en&cites=9948978076388621131', 'serpapi_link': 'https://serpapi.com/search.json?cites=9948978076388621131&engine=google_scholar&hl=en', 'cites_id': '9948978076388621131'}, 'year': '2024'}, {'title': 'Exploiting LLMs and Semantic Technologies to Build a Knowledge Graph of Historical Mining Data', 'link': 'https://scholar.google.com/citations?view_op=view_citation&hl=en&user=RpcilLMAAAAJ&citation_for_view=RpcilLMAAAAJ:9yKSN-GCB0IC', 'citation_id': 'RpcilLMAAAAJ:9yKSN-GCB0IC', 'authors': 'CA Knoblock, B Vu, B Shbita, YY Chiang, PP Krishna, X Lin, G Muric, ...', 'publication': 'International Semantic Web Conference, 451-471, 2025', 'cited_by': {'value': 1, 'link': 'https://scholar.google.com/scholar?oi=bibs&hl=en&cites=17566253492463325705', 'serpapi_link': 'https://serpapi.com/search.json?cites=17566253492463325705&engine=google_scholar&hl=en', 'cites_id': '17566253492463325705'}, 'year': '2025'}, {'title': 'Detection and replacement of neologisms for translation', 'link': 'https://scholar.google.com/citations?view_op=view_citation&hl=en&user=RpcilLMAAAAJ&citation_for_view=RpcilLMAAAAJ:u5HHmVD_uO8C', 'citation_id': 'RpcilLMAAAAJ:u5HHmVD_uO8C', 'authors': 'J Pyo', 'publication': 'The Cooper Union for the Advancement of Science and Art, 2023', 'cited_by': {'value': 1, 'link': 'https://scholar.google.com/scholar?oi=bibs&hl=en&cites=9742440755829639177', 'serpapi_link': 'https://serpapi.com/search.json?cites=9742440755829639177&engine=google_scholar&hl=en', 'cites_id': '9742440755829639177'}, 'year': '2023'}, {'title': 'FRIEDA: Benchmarking Multi-Step Cartographic Reasoning in Vision-Language Models', 'link': 'https://scholar.google.com/citations?view_op=view_citation&hl=en&user=RpcilLMAAAAJ&citation_for_view=RpcilLMAAAAJ:2osOgNQ5qMEC', 'citation_id': 'RpcilLMAAAAJ:2osOgNQ5qMEC', 'authors': 'J Pyo, Y Jiao, D Jung, Z Li, L Jang, S Kirsanova, J Kim, Y Lin, Q Liu, J Xie, ...', 'publication': 'arXiv preprint arXiv:2512.08016, 2025', 'cited_by': {'value': None}, 'year': '2025'}, {'title': 'Augmenting Human-Centered Racial Covenant Detection and Georeferencing with Plug-and-Play NLP Pipelines', 'link': 'https://scholar.google.com/citations?view_op=view_citation&hl=en&user=RpcilLMAAAAJ&citation_for_view=RpcilLMAAAAJ:d1gkVwhDpl0C', 'citation_id': 'RpcilLMAAAAJ:d1gkVwhDpl0C', 'authors': 'J Pyo, Y Jiao, YY Chiang, M Corey', 'publication': 'Proceedings of the 1st ACM SIGSPATIAL International Workshop on Human …, 2025', 'cited_by': {'value': None}, 'year': '2025'}], 'cited_by': {'table': [{'citations': {'all': 6, 'since_2020': 6}}, {'h_index': {'all': 1, 'since_2020': 1}}, {'i10_index': {'all': 0, 'since_2020': 0}}], 'graph': [{'year': 2024, 'citations': 1}, {'year': 2025, 'citations': 5}]}, 'public_access': {'link': 'https://scholar.google.com/citations?view_op=list_mandates&hl=en&user=RpcilLMAAAAJ', 'available': 1, 'not_available': 0}}
+print(data.keys())
+print(data)
