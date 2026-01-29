@@ -29,7 +29,7 @@ portfolio/
 │   ├── pages/
 │   │   ├── index.astro       # Página de inicio con perfil
 │   │   ├── work.astro        # Línea de tiempo de experiencia laboral
-│   │   ├── projects.astro    # Vitrina de proyectos
+│   │   ├── publications.astro    # Vitrina de proyectos
 │   │   └── contact.astro     # Información de contacto
 │   ├── assets/
 │   │   ├── photo.jpeg        # Foto de perfil
