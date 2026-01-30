@@ -3,6 +3,9 @@ import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
+import { staticPubs } from '../data/static';
+import { dynamicPubs } from '../data/dynamic';
+
 const translations = {
 	subtitle: { en: 'Full Publication List', es: 'Trabajos Seleccionados' },
 	title: { en: 'Publications', es: 'Proyectos' },
@@ -49,33 +52,7 @@ function splitAuthors(authors) {
   return s.split(',').map((x) => x.trim()).filter(Boolean);
 }
 
-const publications = [
-	{
-		title: '1',
-		authors: 'Jiyoon Pyo, Second Author, Third Author',
-		venue: 'Preprint',
-		year: 2025,
-		links: {
-			paper: 'https://arxiv.org/abs/xxxx.xxxxx',
-			webpage: 'https://example.com',
-			github: 'https://github.com/org/repo',
-			bibtex: '/bib/fer.bib'
-		}
-	},
-	{
-		title: '2',
-		authors: 'Jiyoon Pyo, Second Author, Third Author',
-		venue: 'Preprint',
-		year: 2024,
-		links: {
-			paper: 'https://arxiv.org/abs/xxxx.xxxxx',
-			webpage: 'https://example.com',
-			github: 'https://github.com/org/repo',
-			huggingface: 'https://huggingface.co/org/model',
-			bibtex: '/bib/fer.bib'
-		}
-	}
-]
+const publications = [...staticPubs, ...dynamicPubs];
 
 const pubsSorted = [...publications].sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
 
