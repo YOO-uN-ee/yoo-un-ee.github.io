@@ -13,9 +13,9 @@ const educationExperience = [
     {
         year: '2023 - Current',
         yearES: '2023 - Actualidad',
-        title: 'University of Minnesota - Twin Cities',
-        titleES: 'Analista de Sistemas',
-        company: 'Ph.D. in Computer Science',
+        institution: 'University of Minnesota - Twin Cities',
+        institutionES: 'Analista de Sistemas',
+        degree: 'Ph.D. in Computer Science',
 		location: 'Minneapolis, MN',
         description: 'Advisor: Dr. Yao-Yi Chiang',
         descriptionES: 'Analista de sistemas con enfoque en desarrollo web, análisis de procesos y digitalización empresarial. Lideré el desarrollo de la web corporativa y participo en la definición, diseño e implementación de soluciones tecnológicas internas, automatización de procesos y mejora continua de sistemas, conectando necesidades operativas con soluciones técnicas escalables.',
@@ -46,9 +46,9 @@ const educationExperience = [
     {
         year: '2023 - 2025',
         yearES: '2023 - 2025',
-        title: 'University of Minnesota - Twin Cities',
-        titleES: 'Desarrollador Fullstack',
-        company: 'M.Sc in Computer Science',
+        institution: 'University of Minnesota - Twin Cities',
+        institutionES: 'Desarrollador Fullstack',
+        degree: 'M.Sc in Computer Science',
 		location: 'Minneapolis, MN',
         description: '',
         descriptionES: 'Desarrollé aplicaciones web de extremo a extremo utilizando Django y React, integrando Api REST, bases de datos relacionales (PostgreSQL) y componentes interactivos. Entre los proyectos destacados: Sistema de reportes con exportación a Excel, JSON, PDF y XML. Dashboard para la gestión de habitaciones de hotel. Generador de reportes dinámicos con filtros web. Módulo de análisis de imágenes con Python y OpenCV.',
@@ -58,9 +58,9 @@ const educationExperience = [
     {
         year: '2021 - 2023',
         yearES: '2021 - 2023',
-        title: 'The Cooper Union for the Advancement of Science and Art',
-        titleES: 'Desarrollador y Consultor de TI Freelance',
-        company: 'M.Eng in Electrical Engineering',
+        institution: 'The Cooper Union for the Advancement of Science and Art',
+        institutionES: 'Desarrollador y Consultor de TI Freelance',
+        degree: 'M.Eng in Electrical Engineering',
 		location: 'New York, NY',
         description: 'Advisor: Dr. Carl Sable',
         descriptionES: 'Gestión y ejecución de proyectos de desarrollo de software, sitios web y soporte técnico para negocios locales, adaptando cada solución a las necesidades del cliente. Desarrollo de Software Específico: Creación de aplicaciones de escritorio y web para gestión de inventarios, pedidos y producción. Destaca una aplicación en Java para joyería que calculaba medidas y pesos exactos de materiales.',
@@ -81,9 +81,9 @@ const educationExperience = [
 	{
         year: '2019 - 2023',
         yearES: '2019 - 2023',
-        title: 'The Cooper Union for the Advancement of Science and Art',
-        titleES: 'Desarrollador y Consultor de TI Freelance',
-        company: 'B.Eng in Electrical Engineering',
+        institution: 'The Cooper Union for the Advancement of Science and Art',
+        institutionES: 'Desarrollador y Consultor de TI Freelance',
+        degree: 'B.Eng in Electrical Engineering',
 		location: 'New York, NY',
         description: 'Minor: Computer Science',
         descriptionES: 'Gestión y ejecución de proyectos de desarrollo de software, sitios web y soporte técnico para negocios locales, adaptando cada solución a las necesidades del cliente. Desarrollo de Software Específico: Creación de aplicaciones de escritorio y web para gestión de inventarios, pedidos y producción. Destaca una aplicación en Java para joyería que calculaba medidas y pesos exactos de materiales.',
@@ -119,7 +119,7 @@ const educationExperience = [
 				</p>
 			</div>
 
-			<div class="space-y-8 sm:space-y-12 parallax-section">
+			<!-- <div class="space-y-8 sm:space-y-12 parallax-section">
 				{
 					educationExperience.map((education, index) => (
 						<div class="relative pl-6 sm:pl-8 border-l-2 border-gray-200 dark:border-gray-700 bg-transparent group cursor-pointer hover:scale-105 transition-all">
@@ -133,7 +133,101 @@ const educationExperience = [
 						</div>
 					))
 				}
-			</div>
+			</div> -->
+
+			<div class="space-y-8 sm:space-y-12 parallax-section">
+				{educationExperience.map((edu) => (
+				  <div class="relative pl-6 sm:pl-8 border-l-2 border-gray-200 dark:border-gray-700 bg-transparent group transition-all">
+					<div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-gray-400 dark:bg-gray-500 group-hover:scale-125 transition-transform"></div>
+		
+					<div class="flex gap-3 sm:gap-4 items-start">
+					  {/* <div class="mt-0.5 shrink-0">
+						{edu.logo ? (
+						  <img
+							src={edu.logo}
+							alt={`${edu.institution} logo`}
+							class="w-8 h-8 sm:w-9 sm:h-9 rounded-md object-contain bg-white/70 dark:bg-white/10 ring-1 ring-gray-200 dark:ring-gray-700"
+							loading="lazy"
+						  />
+						) : (
+						  <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-md grid place-items-center bg-gray-100 dark:bg-gray-800 text-xs font-semibold text-gray-700 dark:text-gray-200 ring-1 ring-gray-200 dark:ring-gray-700">
+							{initials(edu.institution)}
+						  </div>
+						)}
+					  </div> */}
+		
+					  <div class="flex-1">
+						<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-1 sm:gap-0">
+						  <div>
+							<h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+							  {edu.institution}
+							</h3>
+							<p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+							  {edu.location}
+							</p>
+						  </div>
+						  <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium mt-1 sm:mt-0">
+							{edu.year}
+						  </span>
+						</div>
+		
+						<p class="text-sm sm:text-lg text-gray-600 dark:text-gray-300 font-medium mb-2">
+						  {edu.degree}
+						</p>
+		
+						{edu.highlights?.length ? (
+						  <ul class="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed space-y-1 mb-3">
+							{edu.highlights.map((h) => (
+							  <li>
+								<span class="font-medium text-gray-700 dark:text-gray-300">{h.label}:</span>{' '}
+								{h.href ? (
+								  <a
+									href={h.href}
+									target="_blank"
+									rel="noreferrer"
+									class="underline underline-offset-4 hover:text-gray-900 dark:hover:text-white transition-colors"
+								  >
+									{h.text}
+								  </a>
+								) : (
+								  <span>{h.text}</span>
+								)}
+							  </li>
+							))}
+						  </ul>
+						) : null}
+		
+						{edu.activities?.length ? (
+						  <div class="mt-2 space-y-4">
+							{edu.activities.map((a) => (
+							  <div>
+								<p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+								  {a.label}
+								</p>
+		
+								{a.items?.length ? (
+								  <ul class="space-y-1">
+									{a.items.map((it) => (
+									  <li class="text-sm sm:text-base text-gray-600 dark:text-gray-400 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
+										<span>{it.text}</span>
+										{it.meta ? (
+										  <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-500 font-medium">
+											{it.meta}
+										  </span>
+										) : null}
+									  </li>
+									))}
+								  </ul>
+								) : null}
+							  </div>
+							))}
+						  </div>
+						) : null}
+					  </div>
+					</div>
+				  </div>
+				))}
+			  </div>
 		</section>
 	</main>
 
