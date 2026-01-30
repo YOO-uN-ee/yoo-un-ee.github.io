@@ -41,9 +41,9 @@ jobs:
           pip install scholarly
           pip install bibtexparser
 
-      # - name: Update publications file
-      #   run: |
-      #     python src/scripts/update_publications_ts.py
+      - name: Update publications file
+        run: |
+          python src/scripts/update_publications_ts.py
 
       - name: Commit & push if changed
         run: |
