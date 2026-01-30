@@ -1,90 +1,262 @@
----
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
 const translations = {
-    subtitle: { en: 'Milestones', es: 'Mi Trayectoria' },
-    title: { en: 'Education', es: 'Experiencia Laboral' },
-    description: { en: 'Overview of my academic background and progress.', es: 'Una línea de tiempo de mi trayectoria profesional y logros.' }
+  subtitle: { en: 'Milestones', es: 'Hitos' },
+  title: { en: 'Education', es: 'Educación' },
+  description: {
+    en: 'Overview of my academic background, key activities, and progress.',
+    es: 'Resumen de mi formación académica, actividades clave y progreso.'
+  }
 };
 
 const educationExperience = [
-    {
-        year: '2023 - Current',
-        yearES: '2023 - Actualidad',
-        title: 'University of Minnesota - Twin Cities',
-        titleES: 'Analista de Sistemas',
-        company: 'Ph.D. in Computer Science',
-        description: 'Advisor: Dr. Yao-Yi Chiang',
-        descriptionES: 'Analista de sistemas con enfoque en desarrollo web, análisis de procesos y digitalización empresarial. Lideré el desarrollo de la web corporativa y participo en la definición, diseño e implementación de soluciones tecnológicas internas, automatización de procesos y mejora continua de sistemas, conectando necesidades operativas con soluciones técnicas escalables.'
-    },
-    {
-        year: '2023 - 2025',
-        yearES: '2023 - 2025',
-        title: 'University of Minnesota - Twin Cities',
-        titleES: 'Desarrollador Fullstack',
-        company: 'Master\'s in Computer Science',
-        description: '',
-        descriptionES: 'Desarrollé aplicaciones web de extremo a extremo utilizando Django y React, integrando Api REST, bases de datos relacionales (PostgreSQL) y componentes interactivos. Entre los proyectos destacados: Sistema de reportes con exportación a Excel, JSON, PDF y XML. Dashboard para la gestión de habitaciones de hotel. Generador de reportes dinámicos con filtros web. Módulo de análisis de imágenes con Python y OpenCV.'
-    },
-    {
-        year: '2021 - 2023',
-        yearES: '2021 - 2023',
-        title: 'The Cooper Union for the Advancement of Science and Art',
-        titleES: 'Desarrollador y Consultor de TI Freelance',
-        company: 'Master\'s in Electrical Engineering',
-        description: 'Advisor: Dr. Carl Sable',
-        descriptionES: 'Gestión y ejecución de proyectos de desarrollo de software, sitios web y soporte técnico para negocios locales, adaptando cada solución a las necesidades del cliente. Desarrollo de Software Específico: Creación de aplicaciones de escritorio y web para gestión de inventarios, pedidos y producción. Destaca una aplicación en Java para joyería que calculaba medidas y pesos exactos de materiales.'
-    },
-	{
-        year: '2019 - 2023',
-        yearES: '2019 - 2023',
-        title: 'The Cooper Union for the Advancement of Science and Art',
-        titleES: 'Desarrollador y Consultor de TI Freelance',
-        company: 'Bachelor\'s in Electrical Engineering',
-        description: 'Minor: Computer Science',
-        descriptionES: 'Gestión y ejecución de proyectos de desarrollo de software, sitios web y soporte técnico para negocios locales, adaptando cada solución a las necesidades del cliente. Desarrollo de Software Específico: Creación de aplicaciones de escritorio y web para gestión de inventarios, pedidos y producción. Destaca una aplicación en Java para joyería que calculaba medidas y pesos exactos de materiales.'
-    }
+  {
+    period: '2023 - Current',
+    periodES: '2023 - Actualidad',
+    institution: 'University of Minnesota – Twin Cities',
+    institutionES: 'University of Minnesota – Twin Cities',
+    location: 'Minneapolis, MN, USA',
+    logo: '/logos/umn.svg',
+    degree: 'Ph.D. in Computer Science',
+    highlights: [
+      {
+        label: 'Advisor',
+        text: 'Dr. Yao-Yi Chiang',
+        href: 'https://yaoyichi.github.io/#/'
+      },
+      {
+        label: 'Lab',
+        text: 'Knowledge Computing Lab',
+        href: 'https://knowledge-computing.github.io/#/'
+      }
+    ],
+    activities: [
+      {
+        label: 'Teaching Assistant',
+        items: [
+          { text: 'CSCI4541: Introduction to Natural Language Processing', meta: 'Fall 2025' },
+          { text: 'CSCI5523: Introduction to Data Mining', meta: 'Spring 2025' },
+          { text: 'CSCI1913: Introduction to Algorithms, Data Structures, and Program Development', meta: 'Fall 2023' }
+        ]
+      }
+    ]
+  },
+  {
+    period: '2023 - 2025',
+    periodES: '2023 - 2025',
+    institution: 'University of Minnesota – Twin Cities',
+    institutionES: 'University of Minnesota – Twin Cities',
+    location: 'Minneapolis, MN, USA',
+    logo: '/logos/umn.svg',
+    degree: "Master's in Computer Science",
+    highlights: [],
+    activities: []
+  },
+  {
+    period: '2021 - 2023',
+    periodES: '2021 - 2023',
+    institution: 'The Cooper Union for the Advancement of Science and Art',
+    institutionES: 'The Cooper Union for the Advancement of Science and Art',
+    location: 'New York, NY, USA',
+    logo: '/logos/cooper.svg',
+    degree: "Master's in Electrical Engineering",
+    highlights: [
+      {
+        label: 'Advisor',
+        text: 'Dr. Carl Sable',
+        href: 'https://engfac.cooper.edu/sable2#/'
+      },
+      {
+        label: 'Thesis',
+        text: 'Master’s thesis (ProQuest)',
+        href: 'https://www.proquest.com/openview/1be717392643ea691fa02b3821920bd7/1?pq-origsite=gscholar&cbl=18750&diss=y#/'
+      }
+    ],
+    activities: [
+      {
+        label: 'Teaching Assistant',
+        items: [
+          { text: 'PH291: Physics Lab', meta: '2021 - 2023' },
+          { text: 'ECE303: Communication Networks', meta: 'Spring 2023' },
+          { text: 'ECE302: Probability Models and Stochastic Processes', meta: 'Spring 2023' },
+          { text: 'ECE300: Communication Theory', meta: 'Fall 2022' },
+          { text: 'ECE240: Circuit Analysis', meta: 'Fall 2022' }
+        ]
+      }
+    ]
+  },
+  {
+    period: '2019 - 2023',
+    periodES: '2019 - 2023',
+    institution: 'The Cooper Union for the Advancement of Science and Art',
+    institutionES: 'The Cooper Union for the Advancement of Science and Art',
+    location: 'New York, NY, USA',
+    logo: '/logos/cooper.svg',
+    degree: "Bachelor's in Electrical Engineering",
+    highlights: [{ label: 'Minor', text: 'Computer Science' }],
+    activities: [
+      {
+        label: 'Leadership',
+        // TODO: add your leadership roles here (club / org / position + year).
+        items: []
+      }
+    ]
+  }
 ];
+
+const honorsAndAwards = [
+  { title: 'Jesse Sherman Book Award', issuer: 'The Cooper Union for the Advancement of Science and Art', date: 'May 2023' },
+  { title: 'Norman Perry Internship Award', issuer: 'The Cooper Union for the Advancement of Science and Art', date: 'Jan 2023' },
+  { title: 'Half-Tuition Merit Scholarship', issuer: 'The Cooper Union for the Advancement of Science and Art', date: 'Aug 2019 – 2023' },
+  { title: 'Innovator Merit Award', issuer: 'The Cooper Union for the Advancement of Science and Art', date: 'Aug 2019 – 2023' }
+];
+
+function initials(name) {
+  return String(name)
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase())
+    .join('');
+}
 ---
 
 <Layout title={`Education | Jiyoon Pyo`}>
-	<Header />
-	
-	<main class="min-h-screen px-4 sm:px-6 md:px-6">
-		<section class="max-w-3xl mx-auto min-h-[calc(100vh-5rem)] pt-24 sm:pt-32 md:pt-48 pb-16 sm:pb-24 fade-in px-2 sm:px-0">
-			<div class="max-w-2xl mb-12 sm:mb-16">
-				<p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 sm:mb-4 tracking-wider uppercase" data-en={translations.subtitle.en} data-es={translations.subtitle.es}>{translations.subtitle.en}</p>
-				<h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white" data-en={translations.title.en} data-es={translations.title.es}>
-					{translations.title.en}
-				</h1>
-				<p class="mt-3 sm:mt-4 text-sm sm:text-lg text-gray-600 dark:text-gray-400" data-en={translations.description.en} data-es={translations.description.es}>
-					{translations.description.en}
-				</p>
-			</div>
+  <Header />
 
-			<div class="space-y-8 sm:space-y-12 parallax-section">
-				{
-					educationExperience.map((education, index) => (
-						<div class="relative pl-6 sm:pl-8 border-l-2 border-gray-200 dark:border-gray-700 bg-transparent group cursor-pointer hover:scale-105 transition-all">
-							<div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-gray-400 dark:bg-gray-500 group-hover:scale-125 transition-transform"></div>
-							<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2 sm:gap-0">
-								<h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white" data-en={education.title} data-es={education.titleES}>{education.title}</h3>
-								<span class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium" data-en={education.year} data-es={education.yearES}>{education.year}</span>
-							</div>
-							<p class="text-sm sm:text-lg text-gray-600 dark:text-gray-400 font-medium mb-2 sm:mb-3">{education.company}</p>
-							<p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed" data-en={education.description} data-es={education.descriptionES}>{education.description}</p>
-						</div>
-					))
-				}
-			</div>
-		</section>
-	</main>
+  <main class="min-h-screen px-4 sm:px-6 md:px-6">
+    <section class="max-w-3xl mx-auto min-h-[calc(100vh-5rem)] pt-24 sm:pt-32 md:pt-48 pb-16 sm:pb-24 fade-in px-2 sm:px-0">
+      <div class="max-w-2xl mb-12 sm:mb-16">
+        <p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 sm:mb-4 tracking-wider uppercase">
+          {translations.subtitle.en}
+        </p>
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
+          {translations.title.en}
+        </h1>
+        <p class="mt-3 sm:mt-4 text-sm sm:text-lg text-gray-600 dark:text-gray-400">
+          {translations.description.en}
+        </p>
+      </div>
 
-	<Footer />
+      <div class="space-y-8 sm:space-y-12 parallax-section">
+        {educationExperience.map((edu) => (
+          <div class="relative pl-6 sm:pl-8 border-l-2 border-gray-200 dark:border-gray-700 bg-transparent group transition-all">
+            <div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-gray-400 dark:bg-gray-500 group-hover:scale-125 transition-transform"></div>
 
-	<script>
+            <div class="flex gap-3 sm:gap-4 items-start">
+              <div class="mt-0.5 shrink-0">
+                {edu.logo ? (
+                  <img
+                    src={edu.logo}
+                    alt={`${edu.institution} logo`}
+                    class="w-8 h-8 sm:w-9 sm:h-9 rounded-md object-contain bg-white/70 dark:bg-white/10 ring-1 ring-gray-200 dark:ring-gray-700"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-md grid place-items-center bg-gray-100 dark:bg-gray-800 text-xs font-semibold text-gray-700 dark:text-gray-200 ring-1 ring-gray-200 dark:ring-gray-700">
+                    {initials(edu.institution)}
+                  </div>
+                )}
+              </div>
+
+              <div class="flex-1">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-1 sm:gap-0">
+                  <div>
+                    <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+                      {edu.institution}
+                    </h3>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      {edu.location}
+                    </p>
+                  </div>
+                  <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium mt-1 sm:mt-0">
+                    {edu.period}
+                  </span>
+                </div>
+
+                <p class="text-sm sm:text-lg text-gray-600 dark:text-gray-300 font-medium mb-2">
+                  {edu.degree}
+                </p>
+
+                {edu.highlights?.length ? (
+                  <ul class="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed space-y-1 mb-3">
+                    {edu.highlights.map((h) => (
+                      <li>
+                        <span class="font-medium text-gray-700 dark:text-gray-300">{h.label}:</span>{' '}
+                        {h.href ? (
+                          <a
+                            href={h.href}
+                            target="_blank"
+                            rel="noreferrer"
+                            class="underline underline-offset-4 hover:text-gray-900 dark:hover:text-white transition-colors"
+                          >
+                            {h.text}
+                          </a>
+                        ) : (
+                          <span>{h.text}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+
+                {edu.activities?.length ? (
+                  <div class="mt-2 space-y-4">
+                    {edu.activities.map((a) => (
+                      <div>
+                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                          {a.label}
+                        </p>
+
+                        {a.items?.length ? (
+                          <ul class="space-y-1">
+                            {a.items.map((it) => (
+                              <li class="text-sm sm:text-base text-gray-600 dark:text-gray-400 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
+                                <span>{it.text}</span>
+                                {it.meta ? (
+                                  <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-500 font-medium">
+                                    {it.meta}
+                                  </span>
+                                ) : null}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div class="mt-14 sm:mt-16">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          Honors & Awards
+        </h2>
+
+        <div class="space-y-3">
+          {honorsAndAwards.map((a) => (
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white/40 dark:bg-white/5">
+              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
+                <p class="font-semibold text-gray-900 dark:text-white">{a.title}</p>
+                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">{a.date}</p>
+              </div>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{a.issuer}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+
+  <script>
 		document.addEventListener('DOMContentLoaded', () => {
 			const observerOptions = {
 				root: null,
@@ -113,4 +285,24 @@ const educationExperience = [
 			});
 		});
 	</script>
+
+
+  <!-- <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const observer = new IntersectionObserver(
+        (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add('visible')),
+        { threshold: 0.1 }
+      );
+
+      document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
+
+      window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        document.querySelectorAll('.parallax-section').forEach((section) => {
+          const speed = 0.05;
+          section.style.transform = `translateY(${scrolled * speed}px)`;
+        });
+      });
+    });
+  </script> -->
 </Layout>
