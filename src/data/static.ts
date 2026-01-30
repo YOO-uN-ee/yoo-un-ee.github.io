@@ -1,3 +1,6 @@
+// AUTO-GENERATED FILE. DO NOT EDIT.
+// Generated at: 2026-01-29T03:01:43.197436Z
+
 export const staticPubs = [
 	{
 		title: 'Leveraging Large Language Models for Generating Labeled Mineral Site Record Linkage Data',

@@ -9,10 +9,12 @@ from scholarly import scholarly
 import bibtexparser
 import requests
 from urllib.parse import quote
+from pathlib import Path
 
+GEN_RE = re.compile(r"Generated at:\s*([0-9T:\.\-]+)Z")
 DOI_RE = re.compile(r"(10\.\d{4,9}/[-._;()/:A-Z0-9]+)", re.I)
 SCHOLAR_ID = "RpcilLMAAAAJ"
-OUT_PATH = os.environ.get("OUT_PATH", "src/data/publications.generated.ts")
+OUT_PATH = os.environ.get("OUT_PATH", "src/data/dynamic.ts")
 
 META_NAMES = [
     "citation_conference_title",
@@ -124,12 +126,24 @@ def pick_year_from_bibtex(fields: dict, fallback: str = "") -> str:
         return date[:4]
     return fallback or ""
 
+def normalize_authors(author_str: str) -> str:
+    """
+    BibTeX uses `and` as the author delimiter. Convert it to comma-separated.
+    Also normalizes whitespace.
+    """
+    if not author_str:
+        return ""
+    s = re.sub(r"\s+", " ", author_str).strip()
+    parts = [p.strip() for p in re.split(r"\s+and\s+", s) if p.strip()]
+    return ", ".join(parts)
+
+
 def pick_authors_from_bibtex(fields: dict, fallback: str = "") -> str:
     a = (fields.get("author") or "").strip()
     if a:
         # Optional: turn "A and B and C" into your preferred format.
-        return a.replace(" and ", " and ")
-    return fallback or ""
+        return normalize_authors(a)
+    return normalize_authors(fallback) or ""
 
 def pick_title_from_bibtex(fields: dict, fallback: str = "") -> str:
     t = (fields.get("title") or "").strip()
@@ -162,7 +176,7 @@ def looks_truncated_venue(v: str) -> bool:
     if "…" in v:
         return True
     # common Scholar truncation symptoms (ends mid-phrase)
-    bad_endings = (" for", " on", " of", " and", " in", " with", " International Workshop on AI for")
+    bad_endings = (" for", " on", " of", " and", " in", " with")
     if v.endswith(bad_endings):
         return True
     # very long "Proceedings of ..." that ends abruptly
@@ -289,19 +303,168 @@ def pick_link(pub: dict) -> str:
     bib = pub.get("bib", {}) or {}
     return (pub.get("pub_url") or bib.get("url") or "").strip()
 
+def read_generated_year(ts_path: Path) -> int | None:
+    """Reads the header line: // Generated at: 2026-...Z and returns 2026."""
+    if not ts_path.exists():
+        return None
+    text = ts_path.read_text(encoding="utf-8")
+    m = GEN_RE.search(text)
+    if not m:
+        return None
+    try:
+        dt = datetime.fromisoformat(m.group(1))  # no trailing Z in group
+        return dt.year
+    except Exception:
+        return None
+
+def extract_exported_array(ts_text: str) -> list[dict]:
+    """
+    Extracts the first exported array literal from a TS file like:
+      export const dynamicPubs = [...] as const;
+    Assumes the array is valid JSON (double quotes).
+    """
+    # Find first '[' after 'export const'
+    i = ts_text.find("export const")
+    if i < 0:
+        return []
+    j = ts_text.find("[", i)
+    if j < 0:
+        return []
+
+    # Bracket match while respecting strings
+    depth = 0
+    in_str = False
+    esc = False
+    end = None
+    for k in range(j, len(ts_text)):
+        ch = ts_text[k]
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                in_str = False
+            continue
+        else:
+            if ch == '"':
+                in_str = True
+                continue
+            if ch == "[":
+                depth += 1
+            elif ch == "]":
+                depth -= 1
+                if depth == 0:
+                    end = k + 1
+                    break
+
+    if end is None:
+        return []
+
+    arr_src = ts_text[j:end].strip()
+    return json.loads(arr_src)
+
+def pub_key(p: dict) -> str:
+    # Adjust keys to your schema; these are common patterns:
+    return (
+        str(p.get("doi") or "")
+        or str((p.get("links") or {}).get("paper") or "")
+        or f"{p.get('title','')}__{p.get('year','')}"
+    )
+
+def dedupe_keep_order(pubs: list[dict]) -> list[dict]:
+    seen = set()
+    out = []
+    for p in pubs:
+        k = pub_key(p)
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(p)
+    return out
+
+
+def migrate_two_years_ago_dynamic_to_static(dynamic_path: Path, static_path: Path, now_year: int) -> None:
+    """
+    Example:
+      now_year = 2027
+      move entries with year == 2025 from dynamic.ts -> static.ts
+    Only runs if dynamic.ts exists and was generated in a past year.
+    """
+    if not dynamic_path.exists():
+        return
+
+    dyn_gen_year = read_generated_year(dynamic_path)
+    if dyn_gen_year is None:
+        return
+
+    # Only do migration if dynamic file is "old" relative to now
+    if dyn_gen_year >= now_year:
+        return
+
+    target_year = now_year - 2
+
+    dyn_text = dynamic_path.read_text(encoding="utf-8")
+    dyn_items = extract_exported_array(dyn_text)
+
+    to_move = []
+    for p in dyn_items:
+        try:
+            y = int(p.get("year"))
+        except Exception:
+            continue
+        if y == target_year:
+            to_move.append(p)
+
+    if not to_move:
+        return
+
+    # Load existing static (if any)
+    static_items = []
+    if static_path.exists():
+        static_text = static_path.read_text(encoding="utf-8")
+        static_items = extract_exported_array(static_text)
+
+    merged = dedupe_keep_order(static_items + to_move)
+
+    # Write static.ts (keep your header style)
+    generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    static_out = (
+        "// AUTO-GENERATED FILE. DO NOT EDIT.\n"
+        f"// Generated at: {generated_at}\n\n"
+        "export const staticPubs = "
+        + json.dumps(merged, ensure_ascii=False, indent=2)
+        + " as const;\n"
+    )
+    static_path.write_text(static_out, encoding="utf-8")
+
+
 def main():
     author = scholarly.search_author_id(SCHOLAR_ID)
     author = scholarly.fill(author)
 
+    this_year = datetime.now(timezone.utc).year
+    migrate_two_years_ago_dynamic_to_static(
+        dynamic_path=Path("src/data/dynamic.ts"),  # adjust to your paths
+        static_path=Path("src/data/static.ts"),
+        now_year=this_year,
+    )
+
+    allowed_years = {this_year, this_year - 1}
+
     pubs = []
     for p in (author.get("publications") or []):
         full_url = f"https://scholar.google.com/citations?view_op=view_citation&hl=en&user={SCHOLAR_ID}&citation_for_view={p['author_pub_id']}"
-        print(full_url)
         # Filling each pub adds requests; keep schedule infrequent.
         try:
             p_full = scholarly.fill(p, sortby='year')
         except Exception:
             p_full = p
+
+        if int(p_full['bib']['pub_year']) not in allowed_years:
+            continue
+
+        print(p_full)
 
         # 1) Try BibTeX (best for full venue + correct booktitle)
         bibtex_str = ""
@@ -325,27 +488,38 @@ def main():
 
         fallback_authors = pick_authors(p_full)
         fallback_year = pick_year(p_full)
+
+        candidate_year = pick_year_from_bibtex(fields, fallback=fallback_year)
+
+        try:
+            y_int = int(candidate_year)
+        except Exception:
+            # If year is missing/unparseable, skip (or keep, if you prefer)
+            continue
+
+        if y_int not in allowed_years:
+            continue
+
         fallback_venue = pick_venue(p_full)
         fallback_link = pick_link(p_full)
 
         record = {
             "title": pick_title_from_bibtex(fields, fallback=title),
             "authors": pick_authors_from_bibtex(fields, fallback=fallback_authors),
-            "journal": pick_venue_from_bibtex(fields, fallback=fallback_venue),
-            "time": pick_year_from_bibtex(fields, fallback=fallback_year),
-            "link": pick_url_from_bibtex(fields, fallback=fallback_link) or None,
-            "github": None,
-            "slides": None,
-            "abstract": "",
+            "venue": pick_venue_from_bibtex(fields, fallback=fallback_venue),
+            "year": candidate_year,
+            "links": {
+                "paper": pick_url_from_bibtex(fields, fallback=fallback_link) or None,
+            }
         }
 
-        if (not record["journal"]) or ("…" in record["journal"]):
-            doi = extract_doi(record["link"] or "") or extract_doi(bibtex_str)
+        if (not record["venue"]) or ("…" in record["venue"]):
+            doi = extract_doi(record["links"]["paper"] or "") or extract_doi(bibtex_str)
             if doi:
                 msg = crossref_lookup(doi, mailto=os.environ.get("CROSSREF_MAILTO", ""))
                 v = venue_from_crossref(msg)
                 if v:
-                    record["journal"] = v
+                    record["venue"] = v
 
         pubs.append(record)
         time.sleep(1.0)
@@ -353,7 +527,7 @@ def main():
     # Sort newest year first (string-safe)
     def year_key(r):
         try:
-            return int(r["time"])
+            return int(r["year"])
         except Exception:
             return -1
     pubs.sort(key=year_key, reverse=True)
@@ -363,27 +537,26 @@ def main():
     lines.append("// AUTO-GENERATED FILE. DO NOT EDIT.")
     lines.append(f"// Generated at: {generated_at}")
     lines.append("")
-    lines.append("export const publications = [")
+    lines.append("export const dynamicPubs = [")
     for r in pubs:
         title = ts_escape(r["title"])
         authors = ts_escape(r["authors"])
-        journal = ts_escape(r["journal"])
-        year = ts_escape(r["time"])
-        link = r["link"]
+        journal = ts_escape(r["venue"])
+        year = ts_escape(r["year"])
+        link = r["links"]["paper"]
         link_ts = f"'{ts_escape(link)}'" if link else "undefined"
 
         # Keep the same keys your site expects: title/authors/journal/time/link/github/slides/abstract
         lines.append("  {")
         lines.append(f"    title: '{title}',")
         lines.append(f"    authors: '{authors}',")
-        lines.append(f"    journal: '{journal}',")
-        lines.append(f"    time: '{year}',")
-        lines.append(f"    link: {link_ts},")
-        lines.append("    github: undefined,")
-        lines.append("    slides: undefined,")
-        lines.append("    abstract: '',")
+        lines.append(f"    venue: '{journal}',")
+        lines.append(f"    year: '{year}',")
+        lines.append("    link: {")
+        lines.append(f"        paper: {link_ts}")
+        lines.append("    }")
         lines.append("  },")
-    lines.append("] as const;")
+    lines.append("];")
     lines.append("")
 
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
