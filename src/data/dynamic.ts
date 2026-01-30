@@ -1,4 +1,4 @@
-export const staticPubs = [
+export const dynamicPubs = [
 	{
 		title: '3',
 		authors: 'Jiyoon Pyo, Second Author, Third Author',
