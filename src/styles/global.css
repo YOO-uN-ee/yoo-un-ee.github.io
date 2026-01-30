@@ -153,3 +153,19 @@ html.dark {
 	font-weight: bold;
 	color: white;
 }
+
+/* Remove default disclosure triangle */
+.edu-details > summary {
+	list-style: none;
+}
+.edu-details > summary::-webkit-details-marker {
+	display: none;
+}
+
+/* Rotate chevron when open */
+.edu-details[open] .edu-chevron {
+	transform: rotate(180deg);
+}
+.edu-chevron {
+	transition: transform 150ms ease;
+}

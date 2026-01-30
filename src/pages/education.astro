@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { educationExperience } from '../data/education';
 
 const translations = {
     subtitle: { en: 'Milestones', es: 'Mi Trayectoria' },
@@ -9,99 +10,6 @@ const translations = {
     description: { en: 'Overview of my academic background and progress.', es: 'Una línea de tiempo de mi trayectoria profesional y logros.' }
 };
 
-const educationExperience = [
-    {
-        year: '2023 - Current',
-        yearES: '2023 - Actualidad',
-        institution: 'University of Minnesota - Twin Cities',
-        institutionES: 'Analista de Sistemas',
-        degree: 'Ph.D. in Computer Science',
-		location: 'Minneapolis, MN',
-        description: 'Advisor: Dr. Yao-Yi Chiang',
-        descriptionES: 'Analista de sistemas con enfoque en desarrollo web, análisis de procesos y digitalización empresarial. Lideré el desarrollo de la web corporativa y participo en la definición, diseño e implementación de soluciones tecnológicas internas, automatización de procesos y mejora continua de sistemas, conectando necesidades operativas con soluciones técnicas escalables.',
-		highlights: [
-			{
-				label: 'Advisor',
-				text: 'Dr. Yao-Yi Chiang',
-				href: 'https://yaoyichi.github.io/#/'
-			},
-			{
-				label: 'Lab',
-				text: 'Knowledge Computing Lab',
-				href: 'https://knowledge-computing.github.io/#/'
-			}
-			],
-			activities: [
-			{
-				label: 'Teaching Assistant',
-				items: [
-					{ text: 'CSCI5541: Natural Language Processing', meta: 'Spring 2026' },
-					{ text: 'CSCI4541: Introduction to Natural Language Processing', meta: 'Fall 2025' },
-					{ text: 'CSCI5523: Introduction to Data Mining', meta: 'Spring 2025' },
-					{ text: 'CSCI1913: Introduction to Algorithms, Data Structures, and Program Development', meta: 'Fall 2023' }
-				]
-			}
-		]
-	},
-    {
-        year: '2023 - 2025',
-        yearES: '2023 - 2025',
-        institution: 'University of Minnesota - Twin Cities',
-        institutionES: 'Desarrollador Fullstack',
-        degree: 'M.Sc in Computer Science',
-		location: 'Minneapolis, MN',
-        description: '',
-        descriptionES: 'Desarrollé aplicaciones web de extremo a extremo utilizando Django y React, integrando Api REST, bases de datos relacionales (PostgreSQL) y componentes interactivos. Entre los proyectos destacados: Sistema de reportes con exportación a Excel, JSON, PDF y XML. Dashboard para la gestión de habitaciones de hotel. Generador de reportes dinámicos con filtros web. Módulo de análisis de imágenes con Python y OpenCV.',
-		highlights: [],
-		activities: []
-    },
-    {
-        year: '2021 - 2023',
-        yearES: '2021 - 2023',
-        institution: 'The Cooper Union for the Advancement of Science and Art',
-        institutionES: 'Desarrollador y Consultor de TI Freelance',
-        degree: 'M.Eng in Electrical Engineering',
-		location: 'New York, NY',
-        description: 'Advisor: Dr. Carl Sable',
-        descriptionES: 'Gestión y ejecución de proyectos de desarrollo de software, sitios web y soporte técnico para negocios locales, adaptando cada solución a las necesidades del cliente. Desarrollo de Software Específico: Creación de aplicaciones de escritorio y web para gestión de inventarios, pedidos y producción. Destaca una aplicación en Java para joyería que calculaba medidas y pesos exactos de materiales.',
-		highlights: [
-			{
-				label: 'Advisor',
-				text: 'Dr. Carl Sable',
-				href: 'https://engfac.cooper.edu/sable2#/'
-			},
-			{
-				label: 'Thesis',
-				text: 'Master’s thesis (ProQuest)',
-				href: 'https://www.proquest.com/openview/1be717392643ea691fa02b3821920bd7/1?pq-origsite=gscholar&cbl=18750&diss=y#/'
-			}
-		],
-		activities: []
-    },
-	{
-        year: '2019 - 2023',
-        yearES: '2019 - 2023',
-        institution: 'The Cooper Union for the Advancement of Science and Art',
-        institutionES: 'Desarrollador y Consultor de TI Freelance',
-        degree: 'B.Eng in Electrical Engineering',
-		location: 'New York, NY',
-        description: 'Minor: Computer Science',
-        descriptionES: 'Gestión y ejecución de proyectos de desarrollo de software, sitios web y soporte técnico para negocios locales, adaptando cada solución a las necesidades del cliente. Desarrollo de Software Específico: Creación de aplicaciones de escritorio y web para gestión de inventarios, pedidos y producción. Destaca una aplicación en Java para joyería que calculaba medidas y pesos exactos de materiales.',
-		highlight: [],
-		activities: [
-			{
-				label: 'Teaching Assistant',
-				items: [
-					{ text: 'PH291: Physics Lab', meta: '2021 - 2023' },
-					{ text: 'ECE303: Communication Networks', meta: 'Spring 2023' },
-					{ text: 'ECE302: Probability Models and Stochastic Processes', meta: 'Spring 2023' },
-					{ text: 'ECE300: Communication Theory', meta: 'Fall 2022' },
-					{ text: 'ECE240: Circuit Analysis', meta: 'Fall 2022' }
-			]
-		}
-		]
-	}
-];
 ---
 
 <Layout title={`Education | Jiyoon Pyo`}>
@@ -137,97 +45,122 @@ const educationExperience = [
 
 			<div class="space-y-8 sm:space-y-12 parallax-section">
 				{educationExperience.map((edu) => (
-				  <div class="relative pl-6 sm:pl-8 border-l-2 border-gray-200 dark:border-gray-700 bg-transparent group transition-all">
+				  <div class="relative pl-6 sm:pl-8 border-l-2 border-gray-200 dark:border-gray-700 bg-transparent group">
 					<div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-gray-400 dark:bg-gray-500 group-hover:scale-125 transition-transform"></div>
-		
-					<div class="flex gap-3 sm:gap-4 items-start">
-					  {/* <div class="mt-0.5 shrink-0">
-						{edu.logo ? (
-						  <img
-							src={edu.logo}
-							alt={`${edu.institution} logo`}
-							class="w-8 h-8 sm:w-9 sm:h-9 rounded-md object-contain bg-white/70 dark:bg-white/10 ring-1 ring-gray-200 dark:ring-gray-700"
-							loading="lazy"
-						  />
-						) : (
-						  <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-md grid place-items-center bg-gray-100 dark:bg-gray-800 text-xs font-semibold text-gray-700 dark:text-gray-200 ring-1 ring-gray-200 dark:ring-gray-700">
-							{initials(edu.institution)}
-						  </div>
-						)}
-					  </div> */}
-		
-					  <div class="flex-1">
-						<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-1 sm:gap-0">
-						  <div>
-							<h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-							  {edu.institution}
-							</h3>
-							<p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
-							  {edu.location}
-							</p>
-						  </div>
-						  <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium mt-1 sm:mt-0">
-							{edu.year}
-						  </span>
+			  
+					{/* HOVER “CARD” WRAPPER (keeps timeline line stable) */}
+					<div class="rounded-xl px-3 sm:px-4 py-3 -ml-3 sm:-ml-4 cursor-pointer
+								transition-all duration-200
+								hover:bg-gray-50 dark:hover:bg-gray-800/40
+								hover:shadow-sm hover:scale-[1.01]">
+			  
+					  {/* Header row: Institution left, Year+Location right */}
+					  <div class="flex items-start justify-between gap-4 mb-2">
+						<div>
+						  <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+							{edu.institution}
+						  </h3>
 						</div>
-		
-						<p class="text-sm sm:text-lg text-gray-600 dark:text-gray-300 font-medium mb-2">
-						  {edu.degree}
-						</p>
-		
-						{edu.highlights?.length ? (
-						  <ul class="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed space-y-1 mb-3">
-							{edu.highlights.map((h) => (
-							  <li>
-								<span class="font-medium text-gray-700 dark:text-gray-300">{h.label}:</span>{' '}
-								{h.href ? (
-								  <a
-									href={h.href}
-									target="_blank"
-									rel="noreferrer"
-									class="underline underline-offset-4 hover:text-gray-900 dark:hover:text-white transition-colors"
-								  >
-									{h.text}
-								  </a>
-								) : (
-								  <span>{h.text}</span>
-								)}
-							  </li>
-							))}
-						  </ul>
-						) : null}
-		
-						{edu.activities?.length ? (
-						  <div class="mt-2 space-y-4">
-							{edu.activities.map((a) => (
-							  <div>
-								<p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-								  {a.label}
-								</p>
-		
-								{a.items?.length ? (
-								  <ul class="space-y-1">
-									{a.items.map((it) => (
-									  <li class="text-sm sm:text-base text-gray-600 dark:text-gray-400 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
-										<span>{it.text}</span>
-										{it.meta ? (
-										  <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-500 font-medium">
-											{it.meta}
-										  </span>
-										) : null}
-									  </li>
-									))}
-								  </ul>
-								) : null}
-							  </div>
-							))}
+			  
+						<div class="text-right shrink-0">
+						  <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
+							{edu.year}
 						  </div>
-						) : null}
+						  <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+							{edu.location}
+						  </div>
+						</div>
 					  </div>
+			  
+					  <p class="text-sm sm:text-lg text-gray-600 dark:text-gray-300 font-medium mb-2">
+						{edu.degree}
+					  </p>
+			  
+					  {edu.highlights?.length ? (
+						<ul class="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed space-y-1 mb-3">
+						  {edu.highlights.map((h) => (
+							<li>
+							  <span class="font-medium text-gray-700 dark:text-gray-300">{h.label}:</span>{' '}
+							  {h.href ? (
+								<a
+								  href={h.href}
+								  target="_blank"
+								  rel="noreferrer"
+								  class="underline underline-offset-4 hover:text-gray-900 dark:hover:text-white transition-colors"
+								>
+								  {h.text}
+								</a>
+							  ) : (
+								<span>{h.text}</span>
+							  )}
+							</li>
+						  ))}
+						</ul>
+					  ) : null}
+			  
+					  {/* Activities */}
+					  {edu.activities?.length ? (
+						<div class="mt-2 space-y-3">
+						  {edu.activities.map((a) => (
+							<div>
+							  {/* Teaching Assistant -> dropdown */}
+							  {a.label === 'Teaching Assistant' ? (
+								<details class="edu-details">
+								  <summary class="flex items-center justify-between gap-2 text-sm font-semibold text-gray-800 dark:text-gray-200 cursor-pointer select-none">
+									<span>{a.label}</span>
+			  
+									{/* triangle icon */}
+									<svg class="edu-chevron" width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
+									  <path d="M5 7l5 6 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+									</svg>
+								  </summary>
+			  
+								  {a.items?.length ? (
+									<ul class="mt-2 space-y-1">
+									  {a.items.map((it) => (
+										<li class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
+										  <span>{it.text}</span>
+										  {it.meta ? (
+											<span class="text-xs text-gray-500 dark:text-gray-500 font-medium">
+											  {it.meta}
+											</span>
+										  ) : null}
+										</li>
+									  ))}
+									</ul>
+								  ) : null}
+								</details>
+							  ) : (
+								<>
+								  <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+									{a.label}
+								  </p>
+			  
+								  {a.items?.length ? (
+									<ul class="space-y-1">
+									  {a.items.map((it) => (
+										<li class="text-sm sm:text-base text-gray-600 dark:text-gray-400 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
+										  <span>{it.text}</span>
+										  {it.meta ? (
+											<span class="text-xs sm:text-sm text-gray-500 dark:text-gray-500 font-medium">
+											  {it.meta}
+											</span>
+										  ) : null}
+										</li>
+									  ))}
+									</ul>
+								  ) : null}
+								</>
+							  )}
+							</div>
+						  ))}
+						</div>
+					  ) : null}
 					</div>
 				  </div>
 				))}
 			  </div>
+			  
 		</section>
 	</main>
 

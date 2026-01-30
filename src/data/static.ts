@@ -13,7 +13,7 @@ export const staticPubs = [
 		title: 'Detection and replacement of neologisms for translation',
 		authors: 'Jiyoon Pyo',
 		venue: 'The Cooper Union for the Advancement of Science and Art',
-		year: 2024,
+		year: 2023,
 		links: {
 			paper: 'https://www.proquest.com/openview/1be717392643ea691fa02b3821920bd7/1?pq-origsite=gscholar&cbl=18750&diss=y#/',
 		}
