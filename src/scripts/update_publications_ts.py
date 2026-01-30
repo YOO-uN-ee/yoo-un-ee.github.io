@@ -552,7 +552,7 @@ def main():
         lines.append(f"    authors: '{authors}',")
         lines.append(f"    venue: '{journal}',")
         lines.append(f"    year: '{year}',")
-        lines.append("    link: {")
+        lines.append("    links: {")
         lines.append(f"        paper: {link_ts}")
         lines.append("    }")
         lines.append("  },")
