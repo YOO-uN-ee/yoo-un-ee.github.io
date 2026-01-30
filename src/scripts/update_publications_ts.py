@@ -295,12 +295,9 @@ def main():
 
     pubs = []
     for p in (author.get("publications") or []):
-<<<<<<< HEAD
         full_url = f"https://scholar.google.com/citations?view_op=view_citation&hl=en&user={SCHOLAR_ID}&citation_for_view={p['author_pub_id']}"
         print(full_url)
         # Filling each pub adds requests; keep schedule infrequent.
-=======
->>>>>>> 1d9f7b07262e4fad096df48c61864b4bfd2404c6
         try:
             p_full = scholarly.fill(p, sortby='year')
         except Exception:
@@ -326,23 +323,6 @@ def main():
         if not title:
             continue
 
-<<<<<<< HEAD
-        venue = pick_venue(p_full)
-        pub_url = (p_full.get("pub_url") or "").strip()
-
-        if looks_truncated_venue(venue) and pub_url:
-            full_venue = fetch_full_venue_from_url(pub_url)
-            if full_venue:
-                venue = full_venue
-
-        record = {
-            "title": title,
-            "authors": pick_authors(p_full),
-            "journal": venue,
-            "time": pick_year(p_full),
-            "link": pick_link(p_full) or None,
-            # you don't get these reliably from Scholar; leave empty for your UI
-=======
         fallback_authors = pick_authors(p_full)
         fallback_year = pick_year(p_full)
         fallback_venue = pick_venue(p_full)
@@ -354,7 +334,6 @@ def main():
             "journal": pick_venue_from_bibtex(fields, fallback=fallback_venue),
             "time": pick_year_from_bibtex(fields, fallback=fallback_year),
             "link": pick_url_from_bibtex(fields, fallback=fallback_link) or None,
->>>>>>> 1d9f7b07262e4fad096df48c61864b4bfd2404c6
             "github": None,
             "slides": None,
             "abstract": "",
