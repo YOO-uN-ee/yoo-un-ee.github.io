@@ -1,10 +1,10 @@
 // AUTO-GENERATED FILE. DO NOT EDIT.
-// Generated at: 2026-01-30T07:34:29.934850Z
+// Generated at: 2026-02-03T18:47:58.252589Z
 
 export const dynamicPubs = [
   {
     title: 'Exploiting LLMs and Semantic Technologies to Build a Knowledge Graph of Historical Mining Data',
-    authors: 'Knoblock, Craig A, Vu, Binh, Shbita, Basel, Chiang, Yao-Yi, Krishna, Pothula Punith, Lin, Xiao, Muric, Goran, Pyo, Jiyoon, Trejo-Sheu, Adriana, Ye, Meng',
+    authors: 'Craig A Knoblock, Binh Vu, Basel Shbita, Yao-Yi Chiang, Pothula Punith Krishna, Xiao Lin, Goran Muric, Jiyoon Pyo, Adriana Trejo-Sheu, Meng Ye',
     venue: 'International Semantic Web Conference',
     year: '2025',
     links: {

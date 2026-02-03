@@ -464,8 +464,6 @@ def main():
         if int(p_full['bib']['pub_year']) not in allowed_years:
             continue
 
-        print(p_full)
-
         # 1) Try BibTeX (best for full venue + correct booktitle)
         bibtex_str = ""
         fields = {}
