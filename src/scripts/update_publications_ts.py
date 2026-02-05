@@ -5,7 +5,8 @@ import os
 import time
 import json
 from datetime import datetime, timezone
-from scholarly import scholarly
+from scholarly import scholarly, ProxyGenerator
+from scholarly._proxy_generator import MaxTriesExceededException
 import bibtexparser
 import requests
 from urllib.parse import quote
@@ -438,8 +439,26 @@ def migrate_two_years_ago_dynamic_to_static(dynamic_path: Path, static_path: Pat
     )
     static_path.write_text(static_out, encoding="utf-8")
 
+def setup_scholarly_tor() -> bool:
+    pg = ProxyGenerator()
+
+    # Option A: start Tor from inside the process (needs `tor` binary installed)
+    ok = pg.Tor_Internal(tor_cmd="tor")
+
+    # Option B (alternative): if you run tor as a service and expose 9050:
+    # ok = pg.Tor_External(tor_sock_port=9050)
+
+    if ok:
+        scholarly.use_proxy(pg)
+        print("[scholarly] Using Tor proxy")
+    else:
+        print("[scholarly] Tor proxy setup failed; continuing without proxy")
+    return ok
+
 
 def main():
+    setup_scholarly_tor()
+    
     author = scholarly.search_author_id(SCHOLAR_ID)
     author = scholarly.fill(author)
 
