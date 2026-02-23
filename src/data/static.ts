@@ -3,6 +3,15 @@
 
 export const staticPubs = [
 	{
+		title: "Where's the Chicken? Unpacking Spatial Awareness in Vision-Language Models",
+		authors: 'Jiyoon Pyo, Yao-Yi Chiang',
+		venue: 'The Blogpost Track at ICLR 2026',
+		year: 2026,
+		links: {
+			webpage: 'https://iclr-blogposts.github.io/2026/blog/2026/spatial-awareness/',
+		}
+	},
+	{
 		title: 'Leveraging Large Language Models for Generating Labeled Mineral Site Record Linkage Data',
 		authors: 'Jiyoon Pyo, Yao-Yi Chiang',
 		venue: 'Proceedings of the 7th ACM SIGSPATIAL International Workshop on AI for Geographic Knowledge Discovery',

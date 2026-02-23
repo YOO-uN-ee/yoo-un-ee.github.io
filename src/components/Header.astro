@@ -15,6 +15,9 @@ const currentPage = Astro.url.pathname;
 			<a href="/education" class={`text-sm font-medium transition-colors whitespace-nowrap ${currentPage === '/education' ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`} data-en="Education" data-es="Trabajo">
 				Education
 			</a>
+			<a href="/blogs" class={`text-sm font-medium transition-colors whitespace-nowrap ${currentPage === '/blogs' ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`} data-en="Blogs" data-es="Blogs">
+				Blog
+			</a>
 			<a href="/contact" class={`text-sm font-medium transition-colors whitespace-nowrap ${currentPage === '/contact' ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`} data-en="Contact" data-es="Contacto">
 				Contact
 			</a>
@@ -71,6 +74,9 @@ const currentPage = Astro.url.pathname;
 		</a>
 		<a href="/education" onclick="window.closeMobileMenu()" class={`block px-3 py-2 rounded-lg transition-colors font-medium text-sm ${currentPage === '/education' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'}`} data-en="Education" data-es="Trabajo">
 			Education
+		</a>
+		<a href="/blogs" onclick="window.closeMobileMenu()" class={`block px-3 py-2 rounded-lg transition-colors font-medium text-sm ${currentPage === '/blogs' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'}`} data-en="Blogs" data-es="Blogs">
+			Blog
 		</a>
 		<a href="/contact" onclick="window.closeMobileMenu()" class={`block px-3 py-2 rounded-lg transition-colors font-medium text-sm ${currentPage === '/contact' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'}`} data-en="Contact" data-es="Contacto">
 			Contact
