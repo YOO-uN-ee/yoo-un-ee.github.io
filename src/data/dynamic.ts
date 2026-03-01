@@ -14,7 +14,7 @@ export const dynamicPubs = [
   {
     title: 'FRIEDA: Benchmarking Multi-Step Cartographic Reasoning in Vision-Language Models',
     authors: 'Jiyoon Pyo, Yuankun Jiao, Dongwon Jung, Zekun Li, Leeje Jang, Sofia Kirsanova, Jina Kim, Yijun Lin, Qin Liu, Junyi Xie, Hadi Askari, Nan Xu, Muhao Chen, Yao-Yi Chiang',
-    venue: 'arXiv preprint arXiv:2512.08016',
+    venue: 'Accepted to ICLR 2026',
     year: '2025',
     links: {
         paper: 'https://arxiv.org/abs/2512.08016'
