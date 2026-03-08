@@ -4,11 +4,10 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
 // Import all description files from the new location
-const esDescriptions = import.meta.glob('../data/blog-contents/*/descripcion.md', { query: '?raw', import: 'default' });
 const enDescriptions = import.meta.glob('../data/blog-contents/*/description.md', { query: '?raw', import: 'default' });
 
 // Get all blog folders
-const blogFolders = Object.keys(esDescriptions).map(path => {
+const blogFolders = Object.keys(enDescriptions).map(path => {
     const parts = path.split('/');
     return parts[parts.length - 2];
 });
