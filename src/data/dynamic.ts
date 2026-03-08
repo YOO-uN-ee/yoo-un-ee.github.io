@@ -17,7 +17,9 @@ export const dynamicPubs = [
     venue: 'Accepted to ICLR 2026',
     year: '2026',
     links: {
-        paper: 'https://arxiv.org/abs/2512.08016'
+        paper: 'https://arxiv.org/abs/2512.08016',
+        github: 'https://github.com/knowledge-computing/FRIEDA',
+        webpage: 'https://knowledge-computing.github.io/FRIEDA/',
     }
   },
   {
@@ -26,7 +28,8 @@ export const dynamicPubs = [
     venue: 'Proceedings of the 1st ACM SIGSPATIAL International Workshop on Human-Centered Geospatial Computing',
     year: '2025',
     links: {
-        paper: 'https://dl.acm.org/doi/abs/10.1145/3764917.3771333'
+        paper: 'https://dl.acm.org/doi/abs/10.1145/3764917.3771333',
+        github: 'https://github.com/knowledge-computing/MP-term-analyses'
     }
   },
 ];
