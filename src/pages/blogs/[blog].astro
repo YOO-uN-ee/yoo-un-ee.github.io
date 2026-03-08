@@ -4,7 +4,7 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 
 export async function getStaticPaths() {
-    const esDescriptions = import.meta.glob('../../data/blog-contents/*/descripcion.md', { query: '?raw', import: 'default' });
+    const esDescriptions = import.meta.glob('../../data/blog-contents/*/description.md', { query: '?raw', import: 'default' });
     
     return Object.keys(esDescriptions).map(path => {
         const parts = path.split('/');
@@ -18,10 +18,7 @@ export async function getStaticPaths() {
 const { blog } = Astro.params;
 
 // Load descriptions from the new location
-const esDescriptions = import.meta.glob('../../data/blog-contents/*/descripcion.md', { query: '?raw', import: 'default' });
 const enDescriptions = import.meta.glob('../../data/blog-contents/*/description.md', { query: '?raw', import: 'default' });
-
-const esContent = await esDescriptions[`../../data/blog-contents/${blog}/descripcion.md`]() as string;
 const enContent = await enDescriptions[`../../data/blog-contents/${blog}/description.md`]() as string;
 
 // Load images
@@ -59,7 +56,6 @@ function parseProjectData(content: string) {
     return { title, summary, stack, links };
 }
 
-const esData = parseProjectData(esContent);
 const enData = parseProjectData(enContent);
 ---
 
@@ -74,11 +70,9 @@ const enData = parseProjectData(enContent);
 
 			<header class="mb-12">
 				<h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-					<!-- <span class="locale-es">{esData.title}</span> -->
 					<span class="locale-en">{enData.title}</span>
 				</h1>
 				<p class="text-lg text-gray-600 dark:text-gray-400">
-					<!-- <span class="locale-es">{esData.summary}</span> -->
 					<span class="locale-en">{enData.summary}</span>
 				</p>
 			</header>
@@ -90,7 +84,7 @@ const enData = parseProjectData(enContent);
 						{translations.stack.en}
 					</h2>
 					<div class="flex flex-wrap gap-2">
-						{esData.stack.map((tech) => (
+						{enData.stack.map((tech) => (
 							<span class="px-3 py-1 text-sm font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-transparent hover:border-gray-300 dark:hover:border-gray-600 hover:animated-bg transition-all duration-300 cursor-default">
 								{tech}
 							</span>
@@ -99,13 +93,13 @@ const enData = parseProjectData(enContent);
 				</section>
 
 				<!-- Links -->
-				{esData.links.length > 0 && esData.links[0].label !== 'Privado' && esData.links[0].label !== 'Private' && (
+				{enData.links.length > 0 && enData.links[0].label !== 'Privado' && enData.links[0].label !== 'Private' && (
 					<section>
 						<h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4" data-en={translations.links.en} data-es={translations.links.es}>
 							{translations.links.en}
 						</h2>
 						<div class="flex flex-wrap gap-4">
-							{esData.links.map((link, i) => (
+							{enData.links.map((link, i) => (
 								link.url ? (
 									<a href={link.url} target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-gray-900 dark:text-white hover:text-primary transition-colors flex items-center gap-1">
 										<span class="locale-es">{link.label}</span>
