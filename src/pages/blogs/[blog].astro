@@ -30,8 +30,8 @@ const blogImages = Object.keys(allImages)
 const translations = {
     backToProjects: { en: '← Back to Blogs Main Page', es: '← Back to Blogs Main Page' },
     gallery: { en: 'Gallery', es: 'Galería' },
-    stack: { en: 'Technologies', es: 'Tecnologías' },
-    links: { en: 'Links', es: 'Enlaces' },
+    stack: { en: 'Tags', es: 'Tecnologías' },
+    links: { en: 'BibTex', es: 'Enlaces' },
     inDevelopment: { en: 'In Development', es: 'En desarrollo' },
     customSoftware: { en: 'Custom Software', es: 'Software a medida' }
 };
@@ -41,8 +41,8 @@ function parseProjectData(content: string) {
     const title = lines[0].replace(/# /g, '').trim();
     const summary = lines[1].trim();
     
-    const stackIndex = lines.findIndex(l => l.includes('## Stack'));
-    const linksIndex = lines.findIndex(l => l.includes('## Links'));
+    const stackIndex = lines.findIndex(l => l.includes('## Tags'));
+    const linksIndex = lines.findIndex(l => l.includes('## BibTex'));
     
     const stack = stackIndex !== -1 ? lines[stackIndex + 1].split(',').map(s => s.trim()) : [];
     const linksRaw = linksIndex !== -1 ? lines.slice(linksIndex + 1).filter(l => l.trim()) : [];

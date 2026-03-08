@@ -1,8 +1,10 @@
 # Where's the Chicken?
-Multi-tenant SaaS platform designed to optimize cloud kitchen operations. Centralizes digital menus, inventory, and real-time orders with WhatsApp integration and distance-based delivery calculation.
+Modern vision-language models (VLMs) have achieved impressive success in recognizing and describing visual content, yet they continue to struggle with understanding spatial relationships. The limitation persists even with massive data and model scaling, suggesting that the root of the problem lies in the architecture and training objective rather than data alone. This post examines the underlying causes and discusses why recent proposed fixes, while promising, remain insufficient to achieve robust spatial reasoning.
 
-## Stack
-Next.js, PostgreSQL, Mapbox, Lemon Squeezy
+## Tags
+Vision Language Models, VLMs, Spatial Reasoning, Spatial Awareness
 
-## Links
-Private
+## BibTex
+```
+bibtex
+```
