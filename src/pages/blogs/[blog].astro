@@ -31,7 +31,7 @@ const blogImages = Object.keys(allImages)
     .map(path => (allImages[path] as any).default.src);
 
 const translations = {
-    backToProjects: { en: '← Back to Projects', es: '← Volver a Proyectos' },
+    backToProjects: { en: '← Back to Blogs', es: '← Volver a Proyectos' },
     gallery: { en: 'Gallery', es: 'Galería' },
     stack: { en: 'Technologies', es: 'Tecnologías' },
     links: { en: 'Links', es: 'Enlaces' },
@@ -137,16 +137,16 @@ const enData = parseProjectData(enContent);
 									<img src={src} alt={`Project screenshot`} class="w-full h-auto" loading="lazy" />
 									
 									{/* Status Badges */}
-									{i === 0 && (blog === 'HeyFood' || blog === 'MINIPOS') && (
+									{i === 0 && (blog === 'A' || blog === 'B') && (
 										<div class="absolute top-4 left-4">
 											<div class="px-3 py-1.5 rounded-full bg-black/60 dark:bg-white/10 backdrop-blur-md border border-white/20 text-[10px] font-bold uppercase tracking-widest text-white">
-												{blog === 'HeyFood' && (
+												{blog === 'A && (
 													<>
 														<span class="locale-es">{translations.inDevelopment.es}</span>
 														<span class="locale-en">{translations.inDevelopment.en}</span>
 													</>
 												)}
-												{blog === 'MINIPOS' && (
+												{blog === 'B' && (
 													<>
 														<span class="locale-es">{translations.customSoftware.es}</span>
 														<span class="locale-en">{translations.customSoftware.en}</span>
