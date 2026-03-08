@@ -31,7 +31,7 @@ const blogImages = Object.keys(allImages)
     .map(path => (allImages[path] as any).default.src);
 
 const translations = {
-    backToProjects: { en: '← Back to Projects', es: '← Volver a Proyectos' },
+    backToProjects: { en: '← Back to Blogs Main Page', es: '← Back to Blogs Main Page' },
     gallery: { en: 'Gallery', es: 'Galería' },
     stack: { en: 'Technologies', es: 'Tecnologías' },
     links: { en: 'Links', es: 'Enlaces' },
@@ -74,11 +74,11 @@ const enData = parseProjectData(enContent);
 
 			<header class="mb-12">
 				<h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-					<span class="locale-es">{esData.title}</span>
+					<!-- <span class="locale-es">{esData.title}</span> -->
 					<span class="locale-en">{enData.title}</span>
 				</h1>
 				<p class="text-lg text-gray-600 dark:text-gray-400">
-					<span class="locale-es">{esData.summary}</span>
+					<!-- <span class="locale-es">{esData.summary}</span> -->
 					<span class="locale-en">{enData.summary}</span>
 				</p>
 			</header>
