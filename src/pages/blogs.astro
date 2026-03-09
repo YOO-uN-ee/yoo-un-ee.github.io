@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 
 // Import all markdown files
 const mdFiles = import.meta.glob('../data/blog-contents/*/description.md');
-const allImages = import.meta.glob('../assets/*/*.{png,jpg,jpeg,webp}', { eager: true });
+const allImages = import.meta.glob('../data/blog-contents/*/imgs/*.{png,jpg,jpeg,webp,gif}', { eager: true });
 
 const blogs = await Promise.all(Object.entries(mdFiles).map(async ([path, resolver]) => {
     const parts = path.split('/');

@@ -4,23 +4,23 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 
 export async function getStaticPaths() {
-    // Using eager: true guarantees the files are loaded at build time
-    const mdFiles = import.meta.glob('../../data/blog-contents/*/description.md', { eager: true });
+    // Astro.glob is the safest way to pass Markdown components via props
+    const posts = await Astro.glob('../../data/blog-contents/*/description.md');
     
-    return Object.keys(mdFiles).map(path => {
-        const parts = path.split('/');
+    return posts.map(post => {
+        const parts = post.file.split('/');
         const folder = parts[parts.length - 2];
         return {
             params: { blog: folder },
-            props: { post: mdFiles[path] } 
+            props: { post } 
         };
     });
 }
 
 const { blog } = Astro.params;
-const { post } = Astro.props as any;
+const { post } = Astro.props;
 
-// Extract content and provide safe fallbacks in case frontmatter is empty
+// Safely extract the component and frontmatter
 const Content = post.Content;
 const frontmatter = post.frontmatter || {};
 const title = frontmatter.title || blog;
@@ -29,10 +29,10 @@ const date = frontmatter.date || '';
 const tags = frontmatter.tags || [];
 const bibtex = frontmatter.bibtex || null;
 
-// Load images safely (will just return an empty array if you haven't added any yet)
-const allImages = import.meta.glob('../../assets/*/*.{png,jpg,jpeg,webp}', { eager: true });
+// Updated to look inside the specific 'imgs' folder next to description.md
+const allImages = import.meta.glob('../../data/blog-contents/*/imgs/*.{png,jpg,jpeg,webp,gif}', { eager: true });
 const blogImages = Object.keys(allImages)
-    .filter(path => path.includes(`/${blog}/`))
+    .filter(path => path.includes(`/${blog}/imgs/`))
     .map(path => (allImages[path] as any).default.src);
 
 const translations = {
@@ -45,7 +45,7 @@ const translations = {
 	<Header />
 	
 	<main class="min-h-screen px-4 sm:px-6 md:px-6">
-		<article class="max-w-3xl mx-auto pt-24 sm:pt-32 md:pt-48 pb-16 sm:pb-24 fade-in">
+        <article class="max-w-3xl mx-auto pt-24 sm:pt-32 md:pt-48 pb-16 sm:pb-24">
 			<a href="/blogs" class="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors mb-12 inline-block">
 				{translations.backToProjects.en}
 			</a>
