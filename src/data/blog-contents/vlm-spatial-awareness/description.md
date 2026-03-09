@@ -5,7 +5,7 @@ date: "April 27, 2026"
 tags: ["Vision Language Models", "Spatial Reasoning"]
 bibtex: |
   @inproceedings{pyo2026wheres,
-    title={Where{\textquoteright}s the Chicken? Unpacking Spatial Awareness in Vision-Language Models},
+    title={Where's the Chicken? Unpacking Spatial Awareness in Vision-Language Models},
     author={Jiyoon Pyo and Yao-Yi Chiang},
     booktitle={The Blogpost Track at ICLR 2026},
     year={2026},
