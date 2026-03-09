@@ -2,7 +2,7 @@
 title: "Where's the Chicken?"
 summary: "Modern vision-language models (VLMs) have achieved impressive success in recognizing and describing visual content, yet they continue to struggle with understanding spatial relationships."
 date: "March 9, 2026"
-tags: ["Vision Language Models", "VLMs", "Spatial Reasoning", "Spatial Awareness"]
+tags: ["Vision Language Models", "Spatial Reasoning"]
 bibtex: "bibtex..."
 ---
 
