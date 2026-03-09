@@ -4,16 +4,16 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
 // Import all description files
-const enDescriptions = import.meta.glob('../data/blog-contents/*/description.md', { query: '?raw', import: 'default' });
+// const enDescriptions = import.meta.glob('../data/blog-contents/*/description.md', { query: '?raw', import: 'default' });
 const mdFiles = import.meta.glob('../data/blog-contents/*/description.md');
 // Pre-load images for the cover thumbnails
 const allImages = import.meta.glob('../assets/*/*.{png,jpg,jpeg,webp}', { eager: true });
 
 // Get all blog folders
-const blogFolders = Object.keys(enDescriptions).map(path => {
-    const parts = path.split('/');
-    return parts[parts.length - 2];
-});
+// const blogFolders = Object.keys(enDescriptions).map(path => {
+//     const parts = path.split('/');
+//     return parts[parts.length - 2];
+// });
 
 const blogs = await Promise.all(Object.entries(mdFiles).map(async ([path, resolver]) => {
     // Extract folder name
