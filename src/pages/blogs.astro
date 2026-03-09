@@ -61,7 +61,7 @@ const translations = {
 				</p>
 				
                 <div class="flex items-center gap-4 flex-wrap mb-12">
-                    <span class="text-sm font-bold text-gray-500 tracking-wider uppercase">{translations.tagsTitle.en}</span>
+                    <span class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 sm:mb-4 tracking-wider uppercase">{translations.tagsTitle.en}</span>
                     <div class="flex flex-wrap gap-2" id="tag-filters">
                         {allTags.map(tag => (
                             <button data-tag={tag} class="tag-btn px-3 py-1 text-sm font-medium border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all">

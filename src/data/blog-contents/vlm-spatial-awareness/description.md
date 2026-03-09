@@ -11,7 +11,7 @@ The limitation persists even with massive data and model scaling, suggesting tha
 ## The Spatial Problem
 This post examines the underlying causes and discusses why recent proposed fixes, while promising, remain insufficient to achieve robust spatial reasoning.
 
-<!-- ![Example of Spatial Reasoning](./imgs/chick.jpg) -->
+![Example of Spatial Reasoning](./imgs/chick.jpg)
 
 ## Proposed Fixes
 Here is another section of text discussing the fixes...
