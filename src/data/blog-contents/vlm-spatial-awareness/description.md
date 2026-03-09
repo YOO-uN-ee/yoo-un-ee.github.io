@@ -6,10 +6,13 @@ tags: ["Vision Language Models", "Spatial Reasoning"]
 bibtex: "bibtex..."
 ---
 
-The limitation persists even with massive data and model scaling, suggesting that the root of the problem lies in the architecture and training objective rather than data alone. 
+sample text
 
-## The Spatial Problem
+## Sample header
 This post examines the underlying causes and discusses why recent proposed fixes, while promising, remain insufficient to achieve robust spatial reasoning.
+
+### Sample subheader
+fe
 
 ![Example of Spatial Reasoning](./imgs/chick.jpg)
 
