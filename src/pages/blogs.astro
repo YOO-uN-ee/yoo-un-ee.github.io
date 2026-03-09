@@ -81,41 +81,57 @@ const translations = {
 				</div>
 			</div>
 
-            <!-- <div class="flex flex-col gap-6" id="blog-list">
-				{blogs.map((blog) => (
-                    <a href={`/blogs/${blog.slug}`} class="blog-card group flex items-start sm:items-center gap-6 p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 hover:shadow-md transition-all duration-300" data-tags={blog.tags.join(',')}>
-						
-                        <div class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden rounded-lg transition-transform duration-300 group-hover:rotate-6 origin-center">
-							{blog.coverImage ? (
-                                <img src={blog.coverImage} alt={blog.name} class="w-full h-full object-cover" loading="lazy" />
-                            ) : (
-                                <div class="w-full h-full flex items-center justify-center text-gray-400">
-                                    <svg class="w-8 h-8 opacity-20" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm10 8l-4-4-3 3-2-2-2 2v-7h11v8z"/></svg>
-                                </div>
-                            )}
-						</div>
-                        
-                        <div class="flex flex-col flex-grow justify-center py-1">
-                            <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors mb-2">
-                                <span class="locale-en">{blog.name}</span>
-                            </h3>
+            <div class="flex flex-col gap-6" id="blog-list">
+                {blogs.map((blog) => (
+                    <a 
+                        href={`/blogs/${blog.slug}`} 
+                        class="blog-item animated-border group relative block p-px rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 transition-all duration-300 hover:shadow-md"
+                        data-tags={blog.tags.join(',')}
+                    >
+                        <div class="relative bg-white dark:bg-gray-900/50 flex items-start sm:items-center p-4 overflow-hidden rounded-[calc(0.75rem-1px)] h-full">
                             
-                            <div class="flex flex-wrap items-center gap-4">
-                                <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                    {blog.date}
-                                </span>
-                                <div class="flex flex-wrap gap-2">
-                                    {blog.tags.slice(0, 3).map((tag: string) => (
-                                        <span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded border border-gray-200 dark:border-gray-700">
-                                            {tag}
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full transition-all duration-300 group-hover:scale-95 group-hover:opacity-0">
+                                
+                                <div class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden rounded-lg">
+                                    {blog.coverImage ? (
+                                        <img src={blog.coverImage} alt={blog.name} class="w-full h-full object-cover" loading="lazy" />
+                                    ) : (
+                                        <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                            <svg class="w-8 h-8 opacity-20" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm10 8l-4-4-3 3-2-2-2 2v-7h11v8z"/></svg>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <div class="flex flex-col flex-grow justify-center py-1">
+                                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                                        {blog.name}
+                                    </h3>
+                                    
+                                    <div class="flex flex-wrap items-center gap-4">
+                                        <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                                            {blog.date}
                                         </span>
-                                    ))}
+                                        <div class="flex flex-wrap gap-2">
+                                            {blog.tags.slice(0, 3).map((tag: string) => (
+                                                <span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded border border-gray-200 dark:border-gray-700">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+            
+                            <div class="absolute inset-0 flex items-center justify-center translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
+                                <span class="text-sm sm:text-base font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    View Blog Post
+                                </span>
+                            </div>
+            
                         </div>
-					</a>
-				))}
-			</div> -->
+                    </a>
+                ))}
+            </div>
 		</section>
 	</main>
 
