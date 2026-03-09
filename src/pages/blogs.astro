@@ -3,8 +3,11 @@ import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
-// Import all description files from the new location
+// Import all description files
 const enDescriptions = import.meta.glob('../data/blog-contents/*/description.md', { query: '?raw', import: 'default' });
+const mdFiles = import.meta.glob('../data/blog-contents/*/description.md');
+// Pre-load images for the cover thumbnails
+const allImages = import.meta.glob('../assets/*/*.{png,jpg,jpeg,webp}', { eager: true });
 
 // Get all blog folders
 const blogFolders = Object.keys(enDescriptions).map(path => {
@@ -12,24 +15,40 @@ const blogFolders = Object.keys(enDescriptions).map(path => {
     return parts[parts.length - 2];
 });
 
-const blogs = await Promise.all(blogFolders.map(async (folder) => {
-    const enPath = `../data/blog-contents/${folder}/description.md`;
-    const enContent = await enDescriptions[enPath]() as string;
-    // Extract titles
-    const enTitle = enContent.split('\n')[0].replace(/### |# /g, '');
+const blogs = await Promise.all(Object.entries(mdFiles).map(async ([path, resolver]) => {
+    // Extract folder name
+    const parts = path.split('/');
+    const folder = parts[parts.length - 2];
+    
+    // Resolve the markdown file
+    const post = await resolver() as any;
+    
+    // Pull cover image logic (same as before)
+    const folderImages = Object.keys(allImages)
+        .filter(imgPath => imgPath.includes(`/${folder}/`))
+        .map(imgPath => (allImages[imgPath] as any).default.src);
+    const coverImage = folderImages.length > 0 ? folderImages[0] : null;
 
     return {
         slug: folder,
-        name: enTitle,
-        enName: enTitle
+        name: post.frontmatter.title,
+        tags: post.frontmatter.tags || [],
+        date: post.frontmatter.date || 'TBD',
+        coverImage
     };
 }));
 
+// Apply reverse order (newest first)
+blogs.reverse();
+
+// Extract all unique tags for the top filter section
+const allTags = [...new Set(blogs.flatMap(blog => blog.tags))].filter(Boolean);
+
 const translations = {
-	subtitle: { en: 'Interests', es: 'Trabajos Seleccionados' },
-	title: { en: 'Blog', es: 'Proyectos' },
-	description: { en: 'A running list of topics I’m currently exploring and thinking about.', es: 'Una colección de proyectos que muestran mis habilidades en desarrollo full-stack.' },
-    comingSoon: { en: 'Blog contents are coming', es: 'Los proyectos están por venir' },
+	subtitle: { en: 'Interests', es: 'Intereses' },
+	title: { en: 'Blogs', es: 'Blogs' },
+	description: { en: 'A running list of topics I’m currently exploring and thinking about.', es: 'Una colección de temas que estoy explorando y pensando.' },
+    tagsTitle: { en: 'TAGS:', es: 'ETIQUETAS:' }
 };
 ---
 
@@ -38,39 +57,57 @@ const translations = {
 	
 	<main class="min-h-screen px-4 sm:px-6 md:px-6">
 		<section class="max-w-3xl mx-auto min-h-[calc(100vh-5rem)] pt-24 sm:pt-32 md:pt-48 pb-16 sm:pb-24 fade-in px-2 sm:px-0">
-			<div class="max-w-2xl mb-12 sm:mb-16">
-				<p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 sm:mb-4 tracking-wider uppercase" data-en={translations.subtitle.en} data-es={translations.subtitle.es}>{translations.subtitle.en}</p>
-				<h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white" data-en={translations.title.en} data-es={translations.title.es}>
+			<div class="mb-12">
+				<p class="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1 tracking-wider lowercase" data-en={translations.subtitle.en} data-es={translations.subtitle.es}>{translations.subtitle.en}</p>
+				<h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-8" data-en={translations.title.en} data-es={translations.title.es}>
 					{translations.title.en}
 				</h1>
-				<p class="mt-3 sm:mt-4 text-sm sm:text-lg text-gray-600 dark:text-gray-400" data-en={translations.description.en} data-es={translations.description.es}>
-					{translations.description.en}
-				</p>
+				
+                <div class="flex items-center gap-4 flex-wrap mb-12">
+                    <span class="text-sm font-bold text-gray-500 tracking-wider uppercase">{translations.tagsTitle.en}</span>
+                    <div class="flex flex-wrap gap-2">
+                        {allTags.map(tag => (
+                            <button class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors">
+                                {tag}
+                            </button>
+                        ))}
+                    </div>
+                </div>
 			</div>
 
-            <div class="flex items-center justify-center min-h-[400px] parallax-section">
-				<div class="text-center">
-					<h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white animate-pulse" data-en={translations.comingSoon.en} data-es={translations.comingSoon.es}>
-						{translations.comingSoon.en}
-					</h2>
-				</div>
-			</div>
-
-			<div class="grid grid-cols-1">
+            <div class="flex flex-col gap-6">
 				{blogs.map((blog) => (
-					<a href={`/blogs/${blog.slug}`} class="animated-border group relative block p-px rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 transition-all duration-300">
-						<div class="relative h-16 sm:h-20 flex items-center justify-center text-center overflow-hidden rounded-[calc(0.75rem-1px)]">
-							<div class="flex items-center justify-center text-center h-full transition-all duration-300 group-hover:scale-90 group-hover:opacity-0 px-4">
-								<h3 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
-									<span class="locale-es">{blog.name}</span>
-								</h3>
-							</div>
-							<div class="absolute inset-0 flex items-center justify-center translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-								<span class="text-xs sm:text-sm font-bold text-primary dark:text-white uppercase tracking-wider" data-en="View Blog" data-es="View Blog">
-									View Blog Posts
-								</span>
-							</div>
+					<a href={`/blogs/${blog.slug}`} class="group flex items-start sm:items-center gap-6 p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 hover:shadow-md transition-all duration-300">
+						
+                        <div class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden rounded-lg transition-transform duration-300 group-hover:rotate-6 origin-center">
+							{blog.coverImage ? (
+                                <img src={blog.coverImage} alt={blog.name} class="w-full h-full object-cover" loading="lazy" />
+                            ) : (
+                                <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                    <svg class="w-8 h-8 opacity-20" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm10 8l-4-4-3 3-2-2-2 2v-7h11v8z"/></svg>
+                                </div>
+                            )}
 						</div>
+                        
+                        <div class="flex flex-col flex-grow justify-center py-1">
+                            <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors mb-2">
+                                <span class="locale-es">{blog.name}</span>
+                                <span class="locale-en">{blog.name}</span>
+                            </h3>
+                            
+                            <div class="flex flex-wrap items-center gap-4">
+                                <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                                    {blog.date}
+                                </span>
+                                <div class="flex flex-wrap gap-2">
+                                    {blog.tags.slice(0, 3).map(tag => (
+                                        <span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded border border-gray-200 dark:border-gray-700">
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
 					</a>
 				))}
 			</div>
@@ -86,7 +123,6 @@ const translations = {
 				rootMargin: '0px',
 				threshold: 0.1
 			};
-
 			const observer = new IntersectionObserver((entries) => {
 				entries.forEach(entry => {
 					if (entry.isIntersecting) {
