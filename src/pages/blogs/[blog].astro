@@ -4,33 +4,32 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 
 export async function getStaticPaths() {
-    const mdFiles = import.meta.glob('../../data/blog-contents/*/description.md');
+    // Using eager: true guarantees the files are loaded at build time
+    const mdFiles = import.meta.glob('../../data/blog-contents/*/description.md', { eager: true });
     
     return Object.keys(mdFiles).map(path => {
         const parts = path.split('/');
         const folder = parts[parts.length - 2];
         return {
             params: { blog: folder },
-            props: { loadPost: mdFiles[path] }
+            props: { post: mdFiles[path] } 
         };
     });
 }
 
 const { blog } = Astro.params;
-const { loadPost } = Astro.props;
+const { post } = Astro.props as any;
 
-// Load the markdown content safely
-const post = await loadPost() as any;
-const { Content, frontmatter } = post;
+// Extract content and provide safe fallbacks in case frontmatter is empty
+const Content = post.Content;
+const frontmatter = post.frontmatter || {};
+const title = frontmatter.title || blog;
+const summary = frontmatter.summary || '';
+const date = frontmatter.date || '';
+const tags = frontmatter.tags || [];
+const bibtex = frontmatter.bibtex || null;
 
-// Safely pull variables in case the markdown file is malformed
-const title = frontmatter?.title || blog;
-const summary = frontmatter?.summary || '';
-const date = frontmatter?.date || 'Date TBD';
-const tags = frontmatter?.tags || [];
-const bibtex = frontmatter?.bibtex || null;
-
-// Load images safely
+// Load images safely (will just return an empty array if you haven't added any yet)
 const allImages = import.meta.glob('../../assets/*/*.{png,jpg,jpeg,webp}', { eager: true });
 const blogImages = Object.keys(allImages)
     .filter(path => path.includes(`/${blog}/`))
@@ -47,7 +46,7 @@ const translations = {
 	
 	<main class="min-h-screen px-4 sm:px-6 md:px-6">
 		<article class="max-w-3xl mx-auto pt-24 sm:pt-32 md:pt-48 pb-16 sm:pb-24 fade-in">
-			<a href="/blogs" class="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors mb-12 inline-block">
+			<a href="/blogs" class="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors mb-12 inline-block">
 				{translations.backToProjects.en}
 			</a>
 
@@ -56,11 +55,13 @@ const translations = {
 					{title}
 				</h1>
                 
-                <div class="flex gap-3 mb-8">
-                    <span class="px-4 py-1.5 rounded-full border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-400">
-                        {date}
-                    </span>
-                </div>
+                {date && (
+                    <div class="flex gap-3 mb-8">
+                        <span class="px-4 py-1.5 rounded-full border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-400">
+                            {date}
+                        </span>
+                    </div>
+                )}
 
                 {summary && (
                     <div class="text-lg sm:text-xl text-gray-600 dark:text-gray-300 leading-relaxed font-serif">
@@ -72,7 +73,7 @@ const translations = {
             <hr class="border-t-2 border-gray-800 dark:border-gray-200 my-12 w-full" />
 
             <div class="space-y-16">
-                <section class="prose dark:prose-invert max-w-none prose-img:rounded-xl prose-img:border prose-img:border-gray-200 dark:prose-img:border-gray-800">
+				<section class="prose dark:prose-invert max-w-none prose-img:rounded-xl prose-img:border prose-img:border-gray-200 dark:prose-img:border-gray-800">
                     <Content />
                 </section>
 
@@ -87,7 +88,7 @@ const translations = {
 					</section>
 				)}
 
-                {blogImages.length > 0 && (
+				{blogImages.length > 0 && (
 					<section>
 						<div class="grid grid-cols-1 gap-8">
 							{blogImages.map((src) => (
@@ -114,7 +115,6 @@ const translations = {
 			</div>
 		</article>
 	</main>
-
 	<Footer />
 </Layout>
 
