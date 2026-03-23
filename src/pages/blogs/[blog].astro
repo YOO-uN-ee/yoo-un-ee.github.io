@@ -21,6 +21,210 @@ function parseBibtexEntries(rawBib: string): Record<string, string> {
 	return entries;
 }
 
+function decodeHtmlEntities(input: string): string {
+	return input
+		.replace(/&amp;/g, '&')
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&quot;/g, '"')
+		.replace(/&#39;|&#x27;/g, "'")
+		.replace(/&#x26;/g, '&')
+		.replace(/&nbsp;/g, ' ');
+}
+
+function cleanBibValue(raw: string): string {
+	let value = raw.trim();
+	if (value.startsWith('{') && value.endsWith('}')) value = value.slice(1, -1);
+	if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+
+	return value
+		.replace(/[{}]/g, '')
+		.replace(/\\&/g, '&')
+		.replace(/\\"/g, '"')
+		.replace(/\\'/g, "'")
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+function parseBibtexFields(entry: string): Record<string, string> {
+	const fields: Record<string, string> = {};
+	const openBrace = entry.indexOf('{');
+	const firstComma = openBrace >= 0 ? entry.indexOf(',', openBrace + 1) : -1;
+	const lastBrace = entry.lastIndexOf('}');
+	if (firstComma === -1 || lastBrace === -1 || lastBrace <= firstComma) return fields;
+
+	const body = entry.slice(firstComma + 1, lastBrace);
+	let i = 0;
+
+	while (i < body.length) {
+		while (i < body.length && /[\s,]/.test(body[i])) i += 1;
+		if (i >= body.length) break;
+
+		const keyStart = i;
+		while (i < body.length && /[\w-]/.test(body[i])) i += 1;
+		const key = body.slice(keyStart, i).toLowerCase();
+		if (!key) break;
+
+		while (i < body.length && /\s/.test(body[i])) i += 1;
+		if (body[i] !== '=') {
+			while (i < body.length && body[i] !== '\n') i += 1;
+			continue;
+		}
+		i += 1;
+		while (i < body.length && /\s/.test(body[i])) i += 1;
+
+		let value = '';
+		if (body[i] === '{') {
+			let depth = 0;
+			const start = i;
+			while (i < body.length) {
+				if (body[i] === '{') depth += 1;
+				if (body[i] === '}') {
+					depth -= 1;
+					if (depth === 0) {
+						i += 1;
+						break;
+					}
+				}
+				i += 1;
+			}
+			value = body.slice(start, i);
+		} else if (body[i] === '"') {
+			const start = i;
+			i += 1;
+			while (i < body.length) {
+				if (body[i] === '"' && body[i - 1] !== '\\') {
+					i += 1;
+					break;
+				}
+				i += 1;
+			}
+			value = body.slice(start, i);
+		} else {
+			const start = i;
+			while (i < body.length && body[i] !== ',') i += 1;
+			value = body.slice(start, i);
+		}
+
+		fields[key] = cleanBibValue(value);
+		while (i < body.length && body[i] !== ',') i += 1;
+		if (body[i] === ',') i += 1;
+	}
+
+	return fields;
+}
+
+function formatAuthorName(rawName: string): string {
+	const name = rawName.replace(/[{}]/g, '').trim();
+	if (!name) return '';
+	if (/^others$/i.test(name)) return 'et al.';
+
+	let family = '';
+	let given = '';
+
+	if (name.includes(',')) {
+		const [fam, giv] = name.split(',', 2);
+		family = fam.trim();
+		given = (giv || '').trim();
+	} else {
+		const parts = name.split(/\s+/).filter(Boolean);
+		family = parts.pop() || '';
+		given = parts.join(' ');
+	}
+
+	const initials = given
+		.split(/[\s-]+/)
+		.filter(Boolean)
+		.map((part) => `${part[0].toUpperCase()}.`)
+		.join(' ');
+
+	return initials ? `${family}, ${initials}` : family;
+}
+
+function formatAuthorsApa(authorField: string): string {
+	const authors = authorField
+		.split(/\s+and\s+/i)
+		.map((name) => formatAuthorName(name))
+		.filter(Boolean);
+
+	if (authors.length === 0) return 'Unknown author';
+	if (authors.length === 1) return authors[0];
+	if (authors.length === 2) return `${authors[0]}, & ${authors[1]}`;
+
+	const last = authors[authors.length - 1];
+	return `${authors.slice(0, -1).join(', ')}, & ${last}`;
+}
+
+function formatApaReference(entry: string): string {
+	const typeMatch = entry.match(/^@([a-zA-Z]+)/);
+	const entryType = (typeMatch?.[1] || '').toLowerCase();
+	const fields = parseBibtexFields(entry);
+
+	const authors = formatAuthorsApa(fields.author || '');
+	const year = fields.year || 'n.d.';
+	const title = fields.title || 'Untitled';
+	const journal = fields.journal || '';
+	const booktitle = fields.booktitle || '';
+	const publisher = fields.publisher || '';
+	const volume = fields.volume || '';
+	const number = fields.number || '';
+	const pages = fields.pages || '';
+
+	const doiUrl = fields.doi ? `https://doi.org/${fields.doi}` : '';
+	const archiveUrl = fields.eprint ? `https://arxiv.org/abs/${fields.eprint}` : '';
+	const url = doiUrl || fields.url || archiveUrl;
+
+	let source = '';
+
+	if (entryType === 'article') {
+		const volIssue = volume ? `${volume}${number ? `(${number})` : ''}` : '';
+		const pageText = pages ? `${pages}` : '';
+		source = [journal, volIssue, pageText].filter(Boolean).join(', ');
+	} else if (entryType === 'inproceedings' || entryType === 'incollection') {
+		const pagesText = pages ? `(pp. ${pages})` : '';
+		source = [`In ${booktitle}`.trim(), pagesText, publisher].filter(Boolean).join('. ');
+	} else if (entryType === 'misc' && fields.archiveprefix && fields.eprint) {
+		source = `${fields.archiveprefix} preprint ${fields.eprint}`;
+	} else {
+		source = [booktitle, journal, publisher].filter(Boolean).join('. ');
+	}
+
+	const core = [
+		authors,
+		`(${year}).`,
+		`${title}.`,
+		source ? `${source}.` : ''
+	].filter(Boolean).join(' ');
+
+	return url ? `${core} ${url}` : core;
+}
+
+function convertCaptionCodeBlocks(html: string): string {
+	const captionCodeRegex = /<div class="caption">([\s\S]*?)<pre class="astro-code[^>]*><code>([\s\S]*?)<\/code><\/pre>([\s\S]*?)<\/div>/g;
+	return html.replace(captionCodeRegex, (_match, before: string, code: string, after: string) => {
+		const lines = Array.from(code.matchAll(/<span class="line"><span>([\s\S]*?)<\/span><\/span>/g))
+			.map((m) => decodeHtmlEntities(m[1].replace(/<[^>]+>/g, '').trim()))
+			.filter(Boolean);
+
+		const fallback = decodeHtmlEntities(code.replace(/<[^>]+>/g, '').trim());
+		const text = lines.length > 0 ? lines.join('<br />') : fallback;
+		return `<div class="caption">${before}<p>${text}</p>${after}</div>`;
+	});
+}
+
+function addClassToTag(html: string, tag: string, className: string): string {
+	const regex = new RegExp(`<${tag}([^>]*)>`, 'g');
+	return html.replace(regex, (_match, attrs: string) => {
+		const classMatch = attrs.match(/\sclass="([^"]*)"/);
+		if (classMatch) {
+			const classes = classMatch[1].split(/\s+/).filter(Boolean);
+			if (!classes.includes(className)) classes.push(className);
+			return `<${tag}${attrs.replace(classMatch[0], ` class="${classes.join(' ')}"`)}>`;
+		}
+		return `<${tag} class="${className}"${attrs}>`;
+	});
+}
+
 export async function getStaticPaths() {
 	const posts = await Astro.glob('../../data/blog-contents/*/description.md');
 
@@ -42,6 +246,7 @@ const title = frontmatter.title || blog;
 const summary = frontmatter.summary || '';
 const date = frontmatter.date || '';
 const tags = frontmatter.tags || [];
+const blogPostBibtex = (frontmatter.bibtex || '').trim() || null;
 
 const allImages = import.meta.glob('../../data/blog-contents/*/imgs/*.{png,jpg,jpeg,webp,gif}', { eager: true });
 const blogImageEntries = Object.entries(allImages).filter(([path]) => path.includes(`/${blog}/imgs/`));
@@ -53,6 +258,11 @@ const imageSrcByFilename = Object.fromEntries(
 		return [filename, (mod as any).default.src];
 	})
 ) as Record<string, string>;
+const imageSrcByStem: Record<string, string> = {};
+for (const [filename, src] of Object.entries(imageSrcByFilename)) {
+	const stem = filename.replace(/\.[^.]+$/, '');
+	if (!imageSrcByStem[stem]) imageSrcByStem[stem] = src;
+}
 
 const bibFiles = import.meta.glob('../../data/blog-contents/*/ref.bib', {
 	eager: true,
@@ -62,8 +272,8 @@ const bibFiles = import.meta.glob('../../data/blog-contents/*/ref.bib', {
 
 const refBibPath = `../../data/blog-contents/${blog}/ref.bib`;
 const refBibFromFile = (bibFiles[refBibPath] || '').trim();
-const bibtex = refBibFromFile || (frontmatter.bibtex || '').trim() || null;
-const bibEntriesByKey = parseBibtexEntries(bibtex || '');
+const referenceBibSource = refBibFromFile || blogPostBibtex || '';
+const bibEntriesByKey = parseBibtexEntries(referenceBibSource);
 
 const citedKeys: string[] = [];
 let replacedImageCount = 0;
@@ -73,10 +283,11 @@ const citeRegex = /<d-cite\s+key=["']([^"']+)["']\s*><\/d-cite>/g;
 const footnoteRegex = /<d-footnote>([\s\S]*?)<\/d-footnote>/g;
 
 const compiledHtml = await post.compiledContent();
-const processedHtml = compiledHtml
+let processedHtml = compiledHtml
 	.replace(includeRegex, (_, figurePath: string) => {
 		const filename = figurePath.split('/').pop() || figurePath;
-		const src = imageSrcByFilename[filename];
+		const stem = filename.replace(/\.[^.]+$/, '');
+		const src = imageSrcByFilename[filename] || imageSrcByStem[stem];
 
 		if (!src) return '';
 		replacedImageCount += 1;
@@ -92,17 +303,26 @@ const processedHtml = compiledHtml
 	})
 	.replace(footnoteRegex, (_, text: string) => `<sup class="blog-footnote">${text}</sup>`);
 
-const citedReferences = citedKeys.map((key, i) => ({
-	number: i + 1,
-	key,
-	entry: bibEntriesByKey[key] || null
-}));
+processedHtml = convertCaptionCodeBlocks(processedHtml);
+processedHtml = addClassToTag(processedHtml, 'details', 'blog-details');
+processedHtml = addClassToTag(processedHtml, 'summary', 'blog-summary');
+
+const citedReferences = citedKeys.map((key, i) => {
+	const entry = bibEntriesByKey[key] || null;
+	return {
+		number: i + 1,
+		key,
+		entry,
+		apa: entry ? formatApaReference(entry) : `Missing reference for key: ${key}`
+	};
+});
 
 const showFallbackGallery = replacedImageCount === 0 && blogImages.length > 0;
 
 const translations = {
 	backToProjects: { en: '← Back to Blogs', es: '← Volver a los Blogs' },
 	references: { en: 'References', es: 'Referencias' },
+	showReferences: { en: 'Show References', es: 'Mostrar referencias' },
 	bibtex: { en: 'BibTeX', es: 'BibTeX' },
 	tags: { en: 'Tags', es: 'Etiquetas' }
 };
@@ -158,27 +378,28 @@ const translations = {
 
 				{citedReferences.length > 0 && (
 					<section>
-						<h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-							{translations.references.en}
-						</h2>
-						<ol class="space-y-4 list-decimal list-inside">
-							{citedReferences.map((ref) => (
-								<li class="text-sm text-gray-700 dark:text-gray-300">
-									<span class="font-medium mr-2">[{ref.number}]</span>
-									<pre class="inline whitespace-pre-wrap"><code>{ref.entry || `Missing entry for key: ${ref.key}`}</code></pre>
-								</li>
-							))}
-						</ol>
+						<details class="blog-details">
+							<summary class="blog-summary text-xs font-semibold text-gray-400 uppercase tracking-wider">
+								{translations.showReferences.en} ({citedReferences.length})
+							</summary>
+							<ol class="space-y-4 list-decimal list-inside mt-4">
+								{citedReferences.map((ref) => (
+									<li class="text-sm text-gray-700 dark:text-gray-300">
+										{ref.apa}
+									</li>
+								))}
+							</ol>
+						</details>
 					</section>
 				)}
 
-				{bibtex && (
+				{blogPostBibtex && (
 					<section>
 						<h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
 							{translations.bibtex.en}
 						</h2>
 						<div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg overflow-x-auto">
-							<pre class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap"><code>{bibtex}</code></pre>
+							<pre class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap"><code>{blogPostBibtex}</code></pre>
 						</div>
 					</section>
 				)}
@@ -213,5 +434,39 @@ const translations = {
 	.blog-footnote {
 		font-size: 0.75rem;
 		line-height: 1;
+	}
+
+	.blog-details {
+		border: 1px solid rgb(229 231 235);
+		border-radius: 0.75rem;
+		padding: 0.75rem 1rem;
+		background: rgb(249 250 251);
+	}
+
+	:global(.dark) .blog-details {
+		border-color: rgb(55 65 81);
+		background: rgb(17 24 39 / 0.45);
+	}
+
+	.blog-summary {
+		cursor: pointer;
+		list-style: none;
+		user-select: none;
+	}
+
+	.blog-summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.blog-summary::before {
+		content: '+';
+		display: inline-block;
+		margin-right: 0.5rem;
+		font-weight: 700;
+	}
+
+	.blog-details[open] > .blog-summary::before {
+		content: '−';
+		margin-right: 0.5rem;
 	}
 </style>

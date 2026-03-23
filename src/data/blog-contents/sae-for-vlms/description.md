@@ -1,5 +1,5 @@
 ---
-title: ""
+title: "[In Progress] SAEs on VLMs"
 summary: ""
 date: "April 27, 2026"
 tags: ["Vision Language Models", "Sparse Autoencoders"]
