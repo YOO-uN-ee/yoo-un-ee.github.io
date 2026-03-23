@@ -3,49 +3,116 @@ import Layout from '../../layouts/Layout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 
+function parseBibtexEntries(rawBib: string): Record<string, string> {
+	const entries: Record<string, string> = {};
+	if (!rawBib.trim()) return entries;
+
+	const chunks = rawBib
+		.split(/\n(?=@[a-zA-Z]+)/g)
+		.map((chunk) => chunk.trim())
+		.filter(Boolean);
+
+	for (const chunk of chunks) {
+		const keyMatch = chunk.match(/^@[a-zA-Z]+\s*\{\s*([^,\s]+)\s*,/m);
+		if (!keyMatch) continue;
+		entries[keyMatch[1]] = chunk;
+	}
+
+	return entries;
+}
+
 export async function getStaticPaths() {
-    // Astro.glob is the safest way to pass Markdown components via props
-    const posts = await Astro.glob('../../data/blog-contents/*/description.md');
-    
-    return posts.map(post => {
-        const parts = post.file.split('/');
-        const folder = parts[parts.length - 2];
-        return {
-            params: { blog: folder },
-            props: { post } 
-        };
-    });
+	const posts = await Astro.glob('../../data/blog-contents/*/description.md');
+
+	return posts.map((post) => {
+		const parts = post.file.split('/');
+		const folder = parts[parts.length - 2];
+		return {
+			params: { blog: folder },
+			props: { post }
+		};
+	});
 }
 
 const { blog } = Astro.params;
-const { post } = Astro.props;
+const { post } = Astro.props as any;
 
-// Safely extract the component and frontmatter
-const Content = post.Content;
 const frontmatter = post.frontmatter || {};
 const title = frontmatter.title || blog;
 const summary = frontmatter.summary || '';
 const date = frontmatter.date || '';
 const tags = frontmatter.tags || [];
-const bibtex = frontmatter.bibtex || null;
 
-// Updated to look inside the specific 'imgs' folder next to description.md
 const allImages = import.meta.glob('../../data/blog-contents/*/imgs/*.{png,jpg,jpeg,webp,gif}', { eager: true });
-const blogImages = Object.keys(allImages)
-    .filter(path => path.includes(`/${blog}/imgs/`))
-    .map(path => (allImages[path] as any).default.src);
+const blogImageEntries = Object.entries(allImages).filter(([path]) => path.includes(`/${blog}/imgs/`));
+const blogImages = blogImageEntries.map(([, mod]) => (mod as any).default.src);
+const imageSrcByFilename = Object.fromEntries(
+	blogImageEntries.map(([path, mod]) => {
+		const parts = path.split('/');
+		const filename = parts[parts.length - 1];
+		return [filename, (mod as any).default.src];
+	})
+) as Record<string, string>;
+
+const bibFiles = import.meta.glob('../../data/blog-contents/*/ref.bib', {
+	eager: true,
+	query: '?raw',
+	import: 'default'
+}) as Record<string, string>;
+
+const refBibPath = `../../data/blog-contents/${blog}/ref.bib`;
+const refBibFromFile = (bibFiles[refBibPath] || '').trim();
+const bibtex = refBibFromFile || (frontmatter.bibtex || '').trim() || null;
+const bibEntriesByKey = parseBibtexEntries(bibtex || '');
+
+const citedKeys: string[] = [];
+let replacedImageCount = 0;
+
+const includeRegex = /\{%\s*include\s+figure\.liquid\s+[^%]*?path\s*=\s*["“]([^"”]+)["”][^%]*?%\}/g;
+const citeRegex = /<d-cite\s+key=["']([^"']+)["']\s*><\/d-cite>/g;
+const footnoteRegex = /<d-footnote>([\s\S]*?)<\/d-footnote>/g;
+
+const compiledHtml = await post.compiledContent();
+const processedHtml = compiledHtml
+	.replace(includeRegex, (_, figurePath: string) => {
+		const filename = figurePath.split('/').pop() || figurePath;
+		const src = imageSrcByFilename[filename];
+
+		if (!src) return '';
+		replacedImageCount += 1;
+		return `<img src="${src}" alt="${title} figure" loading="lazy" />`;
+	})
+	.replace(citeRegex, (_, key: string) => {
+		let index = citedKeys.indexOf(key);
+		if (index === -1) {
+			citedKeys.push(key);
+			index = citedKeys.length - 1;
+		}
+		return `<sup class="blog-citation">[${index + 1}]</sup>`;
+	})
+	.replace(footnoteRegex, (_, text: string) => `<sup class="blog-footnote">${text}</sup>`);
+
+const citedReferences = citedKeys.map((key, i) => ({
+	number: i + 1,
+	key,
+	entry: bibEntriesByKey[key] || null
+}));
+
+const showFallbackGallery = replacedImageCount === 0 && blogImages.length > 0;
 
 const translations = {
-    backToProjects: { en: '← Back to Blogs', es: '← Volver a los Blogs' },
-    links: { en: 'BibTex', es: 'Enlaces' }
+	backToProjects: { en: '← Back to Blogs', es: '← Volver a los Blogs' },
+	references: { en: 'References', es: 'Referencias' },
+	bibtex: { en: 'BibTeX', es: 'BibTeX' },
+	tags: { en: 'Tags', es: 'Etiquetas' }
 };
 ---
 
 <Layout title={`${title} | Jiyoon Pyo`}>
 	<Header />
-	
+
 	<main class="min-h-screen px-4 sm:px-6 md:px-6">
-        <article class="max-w-3xl mx-auto pt-24 sm:pt-32 md:pt-48 pb-16 sm:pb-24">
+		<article class="max-w-3xl mx-auto pt-24 sm:pt-32 md:pt-48 pb-16 sm:pb-24">
 			<a href="/blogs" class="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors mb-12 inline-block">
 				{translations.backToProjects.en}
 			</a>
@@ -54,41 +121,30 @@ const translations = {
 				<h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
 					{title}
 				</h1>
-                
-                {date && (
-                    <div class="flex gap-3 mb-8">
-                        <span class="px-4 py-1.5 rounded-full border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-400">
-                            {date}
-                        </span>
-                    </div>
-                )}
 
-                {summary && (
-                    <div class="mt-3 sm:mt-4 text-sm sm:text-lg text-gray-600 dark:text-gray-400">
-                        {summary}
-                    </div>
-                )}
+				{date && (
+					<div class="flex gap-3 mb-8">
+						<span class="px-4 py-1.5 rounded-full border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-400">
+							{date}
+						</span>
+					</div>
+				)}
+
+				{summary && (
+					<div class="mt-3 sm:mt-4 text-sm sm:text-lg text-gray-600 dark:text-gray-400">
+						{summary}
+					</div>
+				)}
 			</header>
 
-            <hr class="border-t border-gray-200 dark:border-gray-700 my-12 w-full" />
+			<hr class="border-t border-gray-200 dark:border-gray-700 my-12 w-full" />
 
-            <div class="space-y-16">
+			<div class="space-y-16">
 				<section class="prose dark:prose-invert max-w-none prose-img:rounded-xl prose-img:border prose-img:border-gray-200 dark:prose-img:border-gray-800">
-                    <Content />
-                </section>
+					<div set:html={processedHtml} />
+				</section>
 
-				{bibtex && (
-                    <section>
-                        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                            {translations.links.en}
-                        </h2>
-                        <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg overflow-x-auto">
-                            <pre class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap"><code>{bibtex}</code></pre>
-                        </div>
-                    </section>
-                )}
-
-				<!-- {blogImages.length > 0 && (
+				{showFallbackGallery && (
 					<section>
 						<div class="grid grid-cols-1 gap-8">
 							{blogImages.map((src) => (
@@ -98,20 +154,47 @@ const translations = {
 							))}
 						</div>
 					</section>
-				)} -->
+				)}
 
-                {tags.length > 0 && (
-                    <section class="pt-8 border-t border-gray-200 dark:border-gray-800">
-                        <div class="flex flex-wrap gap-3 items-center">
-                            <span class="text-sm font-bold text-gray-400 uppercase tracking-wider mr-2">Tags</span>
-                            {tags.map((tech: string) => (
-                                <span class="px-4 py-1.5 text-sm font-medium rounded-full border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white bg-white dark:bg-gray-900 shadow-sm cursor-default">
-                                    {tech}
-                                </span>
-                            ))}
-                        </div>
-                    </section>
-                )}
+				{citedReferences.length > 0 && (
+					<section>
+						<h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+							{translations.references.en}
+						</h2>
+						<ol class="space-y-4 list-decimal list-inside">
+							{citedReferences.map((ref) => (
+								<li class="text-sm text-gray-700 dark:text-gray-300">
+									<span class="font-medium mr-2">[{ref.number}]</span>
+									<pre class="inline whitespace-pre-wrap"><code>{ref.entry || `Missing entry for key: ${ref.key}`}</code></pre>
+								</li>
+							))}
+						</ol>
+					</section>
+				)}
+
+				{bibtex && (
+					<section>
+						<h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+							{translations.bibtex.en}
+						</h2>
+						<div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg overflow-x-auto">
+							<pre class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap"><code>{bibtex}</code></pre>
+						</div>
+					</section>
+				)}
+
+				{tags.length > 0 && (
+					<section class="pt-8 border-t border-gray-200 dark:border-gray-800">
+						<div class="flex flex-wrap gap-3 items-center">
+							<span class="text-sm font-bold text-gray-400 uppercase tracking-wider mr-2">{translations.tags.en}</span>
+							{tags.map((tech: string) => (
+								<span class="px-4 py-1.5 text-sm font-medium rounded-full border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white bg-white dark:bg-gray-900 shadow-sm cursor-default">
+									{tech}
+								</span>
+							))}
+						</div>
+					</section>
+				)}
 			</div>
 		</article>
 	</main>
@@ -120,4 +203,15 @@ const translations = {
 
 <style>
 	@reference "../../styles/global.css";
+
+	.blog-citation {
+		margin: 0 0.1rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
+	.blog-footnote {
+		font-size: 0.75rem;
+		line-height: 1;
+	}
 </style>

@@ -3,56 +3,54 @@ import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
-// Import all markdown files
 const mdFiles = import.meta.glob('../data/blog-contents/*/description.md');
 const allImages = import.meta.glob('../data/blog-contents/*/imgs/*.{png,jpg,jpeg,webp,gif}', { eager: true });
 
 const blogs = await Promise.all(Object.entries(mdFiles).map(async ([path, resolver]) => {
-    const parts = path.split('/');
-    const folder = parts[parts.length - 2];
-    
-    // Resolve the markdown file
-    const post = await resolver() as any;
-    
-    // Safely extract frontmatter with fallbacks
-    const title = post.frontmatter?.title || folder;
-    const tags = post.frontmatter?.tags || [];
-    const date = post.frontmatter?.date || 'TBD';
+	const parts = path.split('/');
+	const folder = parts[parts.length - 2];
 
-    const folderImages = Object.keys(allImages)
-        .filter(imgPath => imgPath.includes(`/${folder}/`))
-        .map(imgPath => (allImages[imgPath] as any).default.src);
-    const coverImage = folderImages.length > 0 ? folderImages[0] : null;
+	const post = await resolver() as any;
+	const title = post.frontmatter?.title || folder;
+	const summary = post.frontmatter?.summary || '';
+	const tags = post.frontmatter?.tags || [];
+	const date = post.frontmatter?.date || 'TBD';
 
-    return {
-        slug: folder,
-        name: title,
-        tags,
-        date,
-        coverImage
-    };
+	const folderImages = Object.keys(allImages)
+		.filter(imgPath => imgPath.includes(`/${folder}/`))
+		.map(imgPath => (allImages[imgPath] as any).default.src);
+	const coverImage = folderImages.length > 0 ? folderImages[0] : null;
+
+	return {
+		slug: folder,
+		name: title,
+		summary,
+		tags,
+		date,
+		coverImage
+	};
 }));
 
 blogs.reverse();
 
-// Extract all unique tags
 const allTags = [...new Set(blogs.flatMap(blog => blog.tags))].filter(Boolean).sort();
 
 const translations = {
 	subtitle: { en: 'Interests', es: 'Intereses' },
 	title: { en: 'Blogs', es: 'Blogs' },
 	description: { en: 'A running list of topics I’m currently exploring and thinking about.', es: 'Una colección de temas que estoy explorando y pensando.' },
-    tagsTitle: { en: 'TAGS:', es: 'ETIQUETAS:' },
-    comingSoon: { en: 'Blog contents are coming', es: 'Los proyectos están por venir' },
+	tagsTitle: { en: 'TAGS:', es: 'ETIQUETAS:' },
+	viewPost: { en: 'View Blog Post', es: 'Ver Blog' },
+	noPosts: { en: 'No blog posts yet.', es: 'Aún no hay blogs.' }
 };
 ---
 
 <Layout title={`Blogs | Jiyoon Pyo`}>
 	<Header />
-	
+
 	<main class="min-h-screen px-4 sm:px-6 md:px-6">
 		<section class="max-w-3xl mx-auto min-h-[calc(100vh-5rem)] pt-24 sm:pt-32 md:pt-48 pb-16 sm:pb-24 fade-in px-2 sm:px-0">
-            <div class="max-w-2xl mb-12 sm:mb-16">
+			<div class="max-w-2xl mb-12 sm:mb-16">
 				<p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 sm:mb-4 tracking-wider uppercase" data-en={translations.subtitle.en} data-es={translations.subtitle.es}>{translations.subtitle.en}</p>
 				<h1 class="text-3xl sm:text-4xl md:text-5xl sm:mb-4 font-bold text-gray-900 dark:text-white" data-en={translations.title.en} data-es={translations.title.es}>
 					{translations.title.en}
@@ -60,80 +58,81 @@ const translations = {
 				<p class="mt-3 sm:mb-4 text-sm sm:text-lg text-gray-600 dark:text-gray-400" data-en={translations.description.en} data-es={translations.description.es}>
 					{translations.description.en}
 				</p>
-				
-                <div class="flex items-center gap-4 flex-wrap mb-12">
-                    <span class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 tracking-wider uppercase leading-none translate-y-[1px]">
-                        {translations.tagsTitle.en}
-                    </span>
-                    <div class="flex flex-wrap items-center gap-2" id="tag-filters">
-                        {allTags.map(tag => (
-                            <button data-tag={tag} class="tag-btn px-3 py-1 text-sm font-medium border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all flex items-center justify-center leading-none">
-                                {tag}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+
+				{allTags.length > 0 && (
+					<div class="flex items-center gap-4 flex-wrap mb-12">
+						<span class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 tracking-wider uppercase leading-none translate-y-[1px]">
+							{translations.tagsTitle.en}
+						</span>
+						<div class="flex flex-wrap items-center gap-2" id="tag-filters">
+							{allTags.map(tag => (
+								<button data-tag={tag} class="tag-btn px-3 py-1 text-sm font-medium border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all flex items-center justify-center leading-none">
+									{tag}
+								</button>
+							))}
+						</div>
+					</div>
+				)}
 			</div>
 
-            <div class="flex items-center justify-center min-h-[400px] parallax-section">
-				<div class="text-center">
-					<h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white animate-pulse" data-en={translations.comingSoon.en} data-es={translations.comingSoon.es}>
-						{translations.comingSoon.en}
-					</h2>
+			{blogs.length === 0 ? (
+				<div class="text-center py-16 text-gray-500 dark:text-gray-400 text-lg">
+					{translations.noPosts.en}
 				</div>
-			</div>
+			) : (
+				<div class="flex flex-col gap-6" id="blog-list">
+					{blogs.map((blog) => (
+						<a
+							href={`/blogs/${blog.slug}`}
+							class="blog-card group relative block p-px rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 transition-all duration-300 hover:shadow-md"
+							data-tags={blog.tags.join(',')}
+						>
+							<div class="relative bg-white dark:bg-gray-900/50 flex items-start sm:items-center p-4 overflow-hidden rounded-[calc(0.75rem-1px)] h-full">
+								<div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full transition-all duration-300 group-hover:scale-95 group-hover:opacity-0">
+									<div class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden rounded-lg">
+										{blog.coverImage ? (
+											<img src={blog.coverImage} alt={blog.name} class="w-full h-full object-cover" loading="lazy" />
+										) : (
+											<div class="w-full h-full flex items-center justify-center text-gray-400">
+												<svg class="w-8 h-8 opacity-20" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm10 8l-4-4-3 3-2-2-2 2v-7h11v8z"/></svg>
+											</div>
+										)}
+									</div>
 
-            <!-- <div class="flex flex-col gap-6" id="blog-list">
-                {blogs.map((blog) => (
-                    <a 
-                        href={`/blogs/${blog.slug}`} 
-                        class="blog-item animated-border group relative block p-px rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 transition-all duration-300 hover:shadow-md"
-                        data-tags={blog.tags.join(',')}
-                    >
-                        <div class="relative bg-white dark:bg-gray-900/50 flex items-start sm:items-center p-4 overflow-hidden rounded-[calc(0.75rem-1px)] h-full">
-                            
-                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full transition-all duration-300 group-hover:scale-95 group-hover:opacity-0">
-                                
-                                <div class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden rounded-lg">
-                                    {blog.coverImage ? (
-                                        <img src={blog.coverImage} alt={blog.name} class="w-full h-full object-cover" loading="lazy" />
-                                    ) : (
-                                        <div class="w-full h-full flex items-center justify-center text-gray-400">
-                                            <svg class="w-8 h-8 opacity-20" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm10 8l-4-4-3 3-2-2-2 2v-7h11v8z"/></svg>
-                                        </div>
-                                    )}
-                                </div>
-                                
-                                <div class="flex flex-col flex-grow justify-center py-1">
-                                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                        {blog.name}
-                                    </h3>
-                                    
-                                    <div class="flex flex-wrap items-center gap-4">
-                                        <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                            {blog.date}
-                                        </span>
-                                        <div class="flex flex-wrap gap-2">
-                                            {blog.tags.slice(0, 3).map((tag: string) => (
-                                                <span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded border border-gray-200 dark:border-gray-700">
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-            
-                            <div class="absolute inset-0 flex items-center justify-center translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
-                                <span class="text-sm sm:text-base font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-                                    View Blog Post
-                                </span>
-                            </div>
-            
-                        </div>
-                    </a>
-                ))}
-            </div> -->
+									<div class="flex flex-col flex-grow justify-center py-1">
+										<h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
+											{blog.name}
+										</h3>
+
+										{blog.summary && (
+											<p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{blog.summary}</p>
+										)}
+
+										<div class="flex flex-wrap items-center gap-4">
+											<span class="text-sm text-gray-500 dark:text-gray-400 font-medium">
+												{blog.date}
+											</span>
+											<div class="flex flex-wrap gap-2">
+												{blog.tags.slice(0, 3).map((tag: string) => (
+													<span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded border border-gray-200 dark:border-gray-700">
+														{tag}
+													</span>
+												))}
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="absolute inset-0 flex items-center justify-center translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
+									<span class="text-sm sm:text-base font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+										{translations.viewPost.en}
+									</span>
+								</div>
+							</div>
+						</a>
+					))}
+				</div>
+			)}
 		</section>
 	</main>
 
@@ -141,7 +140,6 @@ const translations = {
 
 	<script>
 		document.addEventListener('DOMContentLoaded', () => {
-            // 1. Intersection Observer for fade-in
 			const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
 			const observer = new IntersectionObserver((entries) => {
 				entries.forEach(entry => {
@@ -153,43 +151,35 @@ const translations = {
 
 			document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-            // 2. Tag Filtering Logic
-            const tagButtons = document.querySelectorAll('.tag-btn');
-            const blogCards = document.querySelectorAll('.blog-card');
-            const selectedTags = new Set();
+			const tagButtons = document.querySelectorAll('.tag-btn');
+			const blogCards = document.querySelectorAll('.blog-card');
+			const selectedTags = new Set();
 
-            tagButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const tag = btn.getAttribute('data-tag');
-                    
-                    // Toggle tag selection visually
-                    if (selectedTags.has(tag)) {
-                        selectedTags.delete(tag);
-                        btn.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'border-gray-500', 'text-gray-900');
-                    } else {
-                        selectedTags.add(tag);
-                        btn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'border-gray-500', 'text-gray-900');
-                    }
+			tagButtons.forEach(btn => {
+				btn.addEventListener('click', () => {
+					const tag = btn.getAttribute('data-tag');
 
-                    // Filter the cards
-                    blogCards.forEach(card => {
-                        if (selectedTags.size === 0) {
-                            // If no tags selected, show everything
-                            (card as HTMLElement).style.display = 'flex';
-                            return;
-                        }
+					if (selectedTags.has(tag)) {
+						selectedTags.delete(tag);
+						btn.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'border-gray-500', 'text-gray-900');
+					} else {
+						selectedTags.add(tag);
+						btn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'border-gray-500', 'text-gray-900');
+					}
 
-                        // Get tags for this specific card
-                        const cardTagsAttr = card.getAttribute('data-tags');
-                        const cardTags = cardTagsAttr ? cardTagsAttr.split(',') : [];
-                        
-                        // Check if the card has AT LEAST ONE of the selected tags
-                        const hasMatch = Array.from(selectedTags).some(selectedTag => cardTags.includes(selectedTag));
-                        
-                        (card as HTMLElement).style.display = hasMatch ? 'flex' : 'none';
-                    });
-                });
-            });
+					blogCards.forEach(card => {
+						if (selectedTags.size === 0) {
+							(card as HTMLElement).style.display = 'block';
+							return;
+						}
+
+						const cardTagsAttr = card.getAttribute('data-tags');
+						const cardTags = cardTagsAttr ? cardTagsAttr.split(',') : [];
+						const hasMatch = Array.from(selectedTags).some(selectedTag => cardTags.includes(String(selectedTag)));
+						(card as HTMLElement).style.display = hasMatch ? 'block' : 'none';
+					});
+				});
+			});
 		});
 	</script>
 </Layout>
