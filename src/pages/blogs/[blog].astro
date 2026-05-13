@@ -227,15 +227,21 @@ function addClassToTag(html: string, tag: string, className: string): string {
 
 export async function getStaticPaths() {
 	const posts = await Astro.glob('../../data/blog-contents/*/description.md');
+	const inProgressMarker = '[In Progress]';
 
-	return posts.map((post) => {
-		const parts = post.file.split('/');
-		const folder = parts[parts.length - 2];
-		return {
-			params: { blog: folder },
-			props: { post }
-		};
-	});
+	return posts
+		.filter((post) => {
+			const title = post.frontmatter?.title || '';
+			return !title.includes(inProgressMarker);
+		})
+		.map((post) => {
+			const parts = post.file.split('/');
+			const folder = parts[parts.length - 2];
+			return {
+				params: { blog: folder },
+				props: { post }
+			};
+		});
 }
 
 const { blog } = Astro.params;

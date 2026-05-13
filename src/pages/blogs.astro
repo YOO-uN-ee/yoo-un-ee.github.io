@@ -5,13 +5,15 @@ import Footer from '../components/Footer.astro';
 
 const mdFiles = import.meta.glob('../data/blog-contents/*/description.md');
 const allImages = import.meta.glob('../data/blog-contents/*/imgs/*.{png,jpg,jpeg,webp,gif}', { eager: true });
+const IN_PROGRESS_MARKER = '[In Progress]';
 
-const blogs = await Promise.all(Object.entries(mdFiles).map(async ([path, resolver]) => {
+const blogs = (await Promise.all(Object.entries(mdFiles).map(async ([path, resolver]) => {
 	const parts = path.split('/');
 	const folder = parts[parts.length - 2];
 
 	const post = await resolver() as any;
 	const title = post.frontmatter?.title || folder;
+	if (title.includes(IN_PROGRESS_MARKER)) return null;
 	const summary = post.frontmatter?.summary || '';
 	const tags = post.frontmatter?.tags || [];
 	const date = post.frontmatter?.date || 'TBD';
@@ -29,7 +31,14 @@ const blogs = await Promise.all(Object.entries(mdFiles).map(async ([path, resolv
 		date,
 		coverImage
 	};
-}));
+}))).filter(Boolean) as Array<{
+	slug: string;
+	name: string;
+	summary: string;
+	tags: string[];
+	date: string;
+	coverImage: string | null;
+}>;
 
 blogs.reverse();
 
