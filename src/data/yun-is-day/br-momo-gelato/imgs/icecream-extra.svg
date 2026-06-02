@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-label="Ice cream cup placeholder photo">
+	<rect width="1200" height="900" fill="#dbeafe"/>
+	<rect x="430" y="430" width="340" height="250" rx="46" fill="#ffffff"/>
+	<path d="M450 500h300" stroke="#93c5fd" stroke-width="34" stroke-linecap="round"/>
+	<circle cx="510" cy="375" r="95" fill="#fef08a"/>
+	<circle cx="610" cy="345" r="105" fill="#f9a8d4"/>
+	<circle cx="710" cy="375" r="95" fill="#bae6fd"/>
+	<circle cx="650" cy="275" r="22" fill="#ef4444"/>
+</svg>

@@ -1,0 +1,1820 @@
+---
+interface RandomPlace {
+	id: string;
+	name: string;
+	category: 'coffee' | 'food' | 'dessert' | 'icecream';
+	visitedDate: string;
+	city: string;
+	country: string;
+	lat: number;
+	lng: number;
+	mainImage: string;
+	images: string[];
+	imageLabels: string[][];
+	menuItems: string[];
+	notes?: string;
+	googleMapsUrl: string;
+}
+
+interface Props {
+	places: RandomPlace[];
+}
+
+const { places } = Astro.props;
+---
+
+<section
+	id="random-globe-app"
+	class="random-globe-app"
+	data-places={JSON.stringify(places)}
+>
+	<div class="random-globe-layout">
+		<div class="random-globe-stage" aria-label="Visited places globe">
+			<div id="random-globe-fallback" class="random-globe-fallback" aria-live="polite">
+				<p id="random-globe-status">Loading globe</p>
+			</div>
+			<div id="random-globe-canvas" class="random-globe-canvas"></div>
+		</div>
+
+		<aside id="random-place-detail" class="random-place-detail" aria-live="polite" hidden>
+			<button id="random-place-close" class="random-place-close" type="button" aria-label="Close place details">
+				<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/>
+				</svg>
+			</button>
+			<div id="random-place-content" class="random-place-content"></div>
+		</aside>
+	</div>
+
+	<button id="random-global-back" class="random-global-back" type="button" aria-label="go back to global">
+		<span class="random-global-back-tooltip">go back to global</span>
+		<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7"/>
+		</svg>
+	</button>
+	<div id="random-utc-clock" class="random-utc-clock" aria-live="polite"></div>
+</section>
+
+<script>
+	type RandomPlace = {
+		id: string;
+		name: string;
+		category: 'coffee' | 'food' | 'dessert' | 'icecream';
+		visitedDate: string;
+		city: string;
+		country: string;
+		lat: number;
+		lng: number;
+		mainImage: string;
+		images: string[];
+		imageLabels: string[][];
+		menuItems: string[];
+		notes?: string;
+		googleMapsUrl: string;
+	};
+
+	type PlaceMarker = RandomPlace & {
+		kind: 'place';
+		markerId: string;
+		places: RandomPlace[];
+		count: number;
+		sourceLat: number;
+		sourceLng: number;
+		isExpanded?: boolean;
+	};
+
+	type ClusterMarker = {
+		kind: 'cluster';
+		id: string;
+		markerId: string;
+		lat: number;
+		lng: number;
+		city: string;
+		country: string;
+		category: RandomPlace['category'];
+		mainImage: string;
+		places: RandomPlace[];
+		count: number;
+		maxDistanceKm: number;
+	};
+
+	type GlobeMarker = PlaceMarker | ClusterMarker;
+
+	const app = document.getElementById('random-globe-app');
+	const globeNode = document.getElementById('random-globe-canvas');
+	const stage = app?.querySelector('.random-globe-stage') as HTMLElement | null;
+	const detail = document.getElementById('random-place-detail') as HTMLElement | null;
+	const detailContent = document.getElementById('random-place-content');
+	const closeButton = document.getElementById('random-place-close');
+	const statusText = document.getElementById('random-globe-status');
+	const utcClock = document.getElementById('random-utc-clock');
+	const globalBackButton = document.getElementById('random-global-back');
+
+	const categoryStyles = {
+		coffee: {
+			label: 'Coffee',
+			color: 'var(--random-marker-coffee)',
+			icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h10v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z"/><path d="M15 10h1.5a2.5 2.5 0 0 1 0 5H15"/><path d="M6 20h10"/><path d="M8 4v2M12 4v2"/></svg>',
+		},
+		food: {
+			label: 'Food',
+			color: 'var(--random-marker-food)',
+			icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v18"/><path d="M4 3v7a2 2 0 0 0 4 0V3"/><path d="M15 3v18"/><path d="M15 3c3 1 5 4 5 8 0 2.5-1.2 4-3 4h-2"/></svg>',
+		},
+		dessert: {
+			label: 'Dessert',
+			color: 'var(--random-marker-dessert)',
+			icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h16"/><path d="M5 11l1.2 8h11.6L19 11"/><path d="M7 11c1-4 3.5-6 5-6s4 2 5 6"/><path d="M9 15h6"/></svg>',
+		},
+		icecream: {
+			label: 'Ice cream',
+			color: 'var(--random-marker-icecream)',
+			icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10a4 4 0 0 1 8 0"/><path d="M6 10h12"/><path d="M8 10l4 11 4-11"/><path d="M10.5 15h3"/></svg>',
+		},
+	};
+
+	const chevronLeft = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7"/></svg>';
+	const chevronRight = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"/></svg>';
+	const EARTH_RADIUS_KM = 6371;
+	const GLOBAL_POINT_OF_VIEW = { lat: 22, lng: -35, altitude: 2.25 };
+	const FREE_ZOOM_EXPAND_ALTITUDE = 0.95;
+	const FREE_ZOOM_TARGET_ALTITUDE = 0.64;
+	const FREE_ZOOM_MIN_ALTITUDE = 0.28;
+	const FREE_ZOOM_GLOBAL_MIN_ALTITUDE = 0.78;
+	const FREE_ZOOM_COLLAPSE_ALTITUDE = 1.55;
+
+	const escapeHtml = (value: unknown) =>
+		String(value ?? '').replace(/[&<>"']/g, (char) => ({
+			'&': '&amp;',
+			'<': '&lt;',
+			'>': '&gt;',
+			'"': '&quot;',
+			"'": '&#39;',
+		})[char] || char);
+
+	const escapeAttribute = escapeHtml;
+
+	function normalizeImageLabels(value: unknown) {
+		if (!value) return [];
+		return (Array.isArray(value) ? value : [value])
+			.map((label) => String(label).trim())
+			.filter(Boolean);
+	}
+
+	function normalizeMenuMatch(value: string) {
+		return value
+			.toLowerCase()
+			.replace(/\([^)]*\)/g, '')
+			.replace(/[^a-z0-9]+/g, ' ')
+			.trim();
+	}
+
+	function menuItemMatchesLabels(item: string, labels: string[]) {
+		const itemMatch = normalizeMenuMatch(item);
+		return labels.some((label) => itemMatch === normalizeMenuMatch(label));
+	}
+
+	const dayNightShader = {
+		vertexShader: `
+			varying vec3 vNormal;
+			void main() {
+				vNormal = normalize(normalMatrix * normal);
+				gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+			}
+		`,
+		fragmentShader: `
+			#define PI 3.141592653589793
+			uniform vec3 baseColor;
+			uniform vec3 nightColor;
+			uniform vec2 sunPosition;
+			uniform vec2 globeRotation;
+			uniform float shadowStrength;
+			varying vec3 vNormal;
+
+			float toRad(in float angle) {
+				return angle * PI / 180.0;
+			}
+
+			vec3 polar2Cartesian(in vec2 coordinates) {
+				float theta = toRad(90.0 - coordinates.x);
+				float phi = toRad(90.0 - coordinates.y);
+				return vec3(
+					sin(phi) * cos(theta),
+					cos(phi),
+					sin(phi) * sin(theta)
+				);
+			}
+
+			void main() {
+				float invLon = toRad(globeRotation.x);
+				float invLat = -toRad(globeRotation.y);
+				mat3 rotX = mat3(
+					1, 0, 0,
+					0, cos(invLat), -sin(invLat),
+					0, sin(invLat), cos(invLat)
+				);
+				mat3 rotY = mat3(
+					cos(invLon), 0, sin(invLon),
+					0, 1, 0,
+					-sin(invLon), 0, cos(invLon)
+				);
+				vec3 rotatedSunDirection = rotX * rotY * polar2Cartesian(sunPosition);
+				float intensity = dot(normalize(vNormal), normalize(rotatedSunDirection));
+				float night = 1.0 - smoothstep(-0.14, 0.18, intensity);
+				vec3 shaded = mix(baseColor, nightColor, night * shadowStrength);
+				gl_FragColor = vec4(shaded, 1.0);
+			}
+		`,
+	};
+
+	function setGlobeStatus(message: string) {
+		if (statusText) statusText.textContent = message;
+	}
+
+	function supportsWebGL() {
+		const testCanvas = document.createElement('canvas');
+		return Boolean(testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl'));
+	}
+
+	function getCssVariable(name: string, fallback: string) {
+		if (!app) return fallback;
+		const value = getComputedStyle(app).getPropertyValue(name).trim();
+		return value || fallback;
+	}
+
+	function updateUtcClock(time = new Date()) {
+		if (!utcClock) return;
+		const stamp = time.toISOString().replace('T', ' ').slice(0, 19);
+		utcClock.textContent = `${stamp} UTC`;
+	}
+
+	function toRadians(value: number) {
+		return value * Math.PI / 180;
+	}
+
+	function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+		const dLat = toRadians(b.lat - a.lat);
+		const dLng = toRadians(b.lng - a.lng);
+		const lat1 = toRadians(a.lat);
+		const lat2 = toRadians(b.lat);
+		const h =
+			Math.sin(dLat / 2) ** 2 +
+			Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+		return 2 * EARTH_RADIUS_KM * Math.asin(Math.min(1, Math.sqrt(h)));
+	}
+
+	function clusterDistanceForAltitude(altitude = 2.25) {
+		if (altitude > 1.85) return 35;
+		if (altitude > 1.25) return 12;
+		if (altitude > 0.92) return 4;
+		if (altitude > 0.68) return 1.1;
+		return 0.12;
+	}
+
+	function clusterFocusAltitude(cluster: ClusterMarker) {
+		if (cluster.maxDistanceKm > 18) return 0.18;
+		if (cluster.maxDistanceKm > 6) return 0.1;
+		if (cluster.maxDistanceKm > 2) return 0.032;
+		return 0.024;
+	}
+
+	function markerSignature(markers: GlobeMarker[]) {
+		return markers
+			.map((marker) => `${marker.kind}:${marker.markerId}:${marker.count}:${marker.lat.toFixed(5)}:${marker.lng.toFixed(5)}`)
+			.join('|');
+	}
+
+	function createPlaceMarker(
+		place: RandomPlace,
+		position: { lat: number; lng: number } = place,
+		isExpanded = false,
+	): PlaceMarker {
+		return {
+			...place,
+			lat: position.lat,
+			lng: position.lng,
+			kind: 'place',
+			markerId: `place:${place.id}`,
+			places: [place],
+			count: 1,
+			sourceLat: place.lat,
+			sourceLng: place.lng,
+			isExpanded,
+		};
+	}
+
+	function dominantCategory(places: RandomPlace[]) {
+		const counts = places.reduce<Record<RandomPlace['category'], number>>((acc, place) => {
+			acc[place.category] = (acc[place.category] || 0) + 1;
+			return acc;
+		}, { coffee: 0, food: 0, dessert: 0, icecream: 0 });
+
+		return (Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'coffee') as RandomPlace['category'];
+	}
+
+	function buildExpandedMarkers(places: RandomPlace[], expandedPlaceIds: Set<string>) {
+		const sortedPlaces = [...places].sort((a, b) =>
+			[a.country, a.city, a.name].join('|').localeCompare([b.country, b.city, b.name].join('|'))
+		);
+
+		return sortedPlaces.map((place) => {
+			if (!expandedPlaceIds.has(place.id)) return createPlaceMarker(place);
+			return createPlaceMarker(place, place, true);
+		});
+	}
+
+	function getPlaceFocusPosition(place: RandomPlace) {
+		return {
+			lat: place.lat,
+			lng: place.lng,
+		};
+	}
+
+	function getPlaceSource(place: RandomPlace) {
+		if ('sourceLat' in place && 'sourceLng' in place) {
+			return {
+				...place,
+				lat: Number((place as PlaceMarker).sourceLat),
+				lng: Number((place as PlaceMarker).sourceLng),
+			};
+		}
+
+		return place;
+	}
+
+	function buildMarkerClusters(places: RandomPlace[], altitude: number): GlobeMarker[] {
+		const thresholdKm = clusterDistanceForAltitude(altitude);
+		const buckets: Array<{ lat: number; lng: number; places: RandomPlace[] }> = [];
+		const sortedPlaces = [...places].sort((a, b) =>
+			[a.country, a.city, a.name].join('|').localeCompare([b.country, b.city, b.name].join('|'))
+		);
+
+		sortedPlaces.forEach((place) => {
+			let nearestBucket: typeof buckets[number] | null = null;
+			let nearestDistance = Infinity;
+
+			buckets.forEach((bucket) => {
+				const distance = distanceKm(place, bucket);
+				if (distance <= thresholdKm && distance < nearestDistance) {
+					nearestBucket = bucket;
+					nearestDistance = distance;
+				}
+			});
+
+			if (!nearestBucket) {
+				buckets.push({ lat: place.lat, lng: place.lng, places: [place] });
+				return;
+			}
+
+			nearestBucket.places.push(place);
+			nearestBucket.lat = nearestBucket.places.reduce((sum, item) => sum + item.lat, 0) / nearestBucket.places.length;
+			nearestBucket.lng = nearestBucket.places.reduce((sum, item) => sum + item.lng, 0) / nearestBucket.places.length;
+		});
+
+		return buckets.map((bucket) => {
+			if (bucket.places.length === 1) return createPlaceMarker(bucket.places[0]);
+
+			const sortedIds = bucket.places.map((place) => place.id).sort();
+			const maxDistanceKm = bucket.places.reduce((max, place) => Math.max(max, distanceKm(place, bucket)), 0);
+			const firstPlace = bucket.places[0];
+
+			return {
+				kind: 'cluster',
+				id: sortedIds.join('+'),
+				markerId: `cluster:${sortedIds.join('+')}`,
+				lat: bucket.lat,
+				lng: bucket.lng,
+				city: firstPlace.city,
+				country: firstPlace.country,
+				category: dominantCategory(bucket.places),
+				mainImage: firstPlace.mainImage,
+				places: bucket.places,
+				count: bucket.places.length,
+				maxDistanceKm,
+			};
+		});
+	}
+
+	async function initRandomGlobe() {
+		if (!(app && globeNode && stage && detail && detailContent)) return;
+
+		if (!supportsWebGL()) {
+			app.classList.add('is-fallback');
+			setGlobeStatus('enable chrome graphics acceleration');
+			return;
+		}
+
+		const places = JSON.parse(app.dataset.places || '[]') as RandomPlace[];
+		let selectedPlace: RandomPlace | null = null;
+		let selectedImageIndex = 0;
+		let controls: any = null;
+		let currentMarkerSignature = '';
+		let expandedPlaceIds = new Set<string>();
+		let isClusterZooming = false;
+		let isFreeZooming = false;
+
+		try {
+			const [
+				{ default: Globe },
+				three,
+				topojson,
+				landAtlas,
+				solar,
+			] = await Promise.all([
+				import('globe.gl'),
+				import('three'),
+				import('topojson-client'),
+				import('world-atlas/land-110m.json'),
+				import('solar-calculator'),
+			]);
+
+			const { Color, DoubleSide, ShaderMaterial, Vector2 } = three;
+			const landTopo = (landAtlas as any).default || landAtlas;
+			const landFeatures = (topojson as any).feature(landTopo, landTopo.objects.land).features;
+			const globeFillColor = getCssVariable('--random-globe-fill', document.documentElement.classList.contains('dark') ? '#a7b3c4' : '#e5e9f0');
+			const continentColor = getCssVariable('--random-continent', document.documentElement.classList.contains('dark') ? '#88c0d0' : '#5e81ac');
+			const nightColor = getCssVariable('--random-night', document.documentElement.classList.contains('dark') ? '#2e3440' : '#4c566a');
+			const polygonStrokeColor = () => getCssVariable('--random-continent-stroke', document.documentElement.classList.contains('dark') ? 'rgba(136, 192, 208, 0.36)' : 'rgba(94, 129, 172, 0.34)');
+
+			const createDayNightMaterial = (baseColor: string, strength: number) => new ShaderMaterial({
+				uniforms: {
+					baseColor: { value: new Color(baseColor) },
+					nightColor: { value: new Color(nightColor) },
+					sunPosition: { value: new Vector2() },
+					globeRotation: { value: new Vector2() },
+					shadowStrength: { value: strength },
+				},
+				vertexShader: dayNightShader.vertexShader,
+				fragmentShader: dayNightShader.fragmentShader,
+				side: DoubleSide,
+			});
+
+			const globeMaterial = createDayNightMaterial(globeFillColor, 0.68);
+			const landMaterial = createDayNightMaterial(continentColor, 0.58);
+
+			const sunPosAt = (time: Date) => {
+				const day = new Date(+time).setUTCHours(0, 0, 0, 0);
+				const t = (solar as any).century(time);
+				const longitude = (day - +time) / 864e5 * 360 - 180;
+				return [longitude - (solar as any).equationOfTime(t) / 4, (solar as any).declination(t)];
+			};
+
+			const updateSun = () => {
+				const now = new Date();
+				const [lng, lat] = sunPosAt(now);
+				globeMaterial.uniforms.sunPosition.value.set(lng, lat);
+				landMaterial.uniforms.sunPosition.value.set(lng, lat);
+				const pov = world.pointOfView();
+				globeMaterial.uniforms.globeRotation.value.set(pov.lng, pov.lat);
+				landMaterial.uniforms.globeRotation.value.set(pov.lng, pov.lat);
+				updateUtcClock(now);
+			};
+
+		const world = Globe()(globeNode)
+			.backgroundColor('rgba(0,0,0,0)')
+			.showAtmosphere(false)
+			.globeMaterial(globeMaterial)
+			.polygonsData(landFeatures)
+			.polygonCapMaterial(landMaterial)
+			.polygonSideColor(() => 'rgba(0,0,0,0)')
+			.polygonStrokeColor(polygonStrokeColor)
+			.polygonAltitude(0.003)
+			.htmlElementsData([])
+			.htmlLat('lat')
+			.htmlLng('lng')
+			.htmlAltitude(0.03)
+			.htmlTransitionDuration(250)
+			.htmlElement(createMarker)
+			.htmlElementVisibilityModifier((el, isVisible) => {
+				el.style.opacity = isVisible ? '1' : '0';
+				el.style.pointerEvents = isVisible ? 'auto' : 'none';
+			})
+			.onZoom(({ lng, lat }) => {
+				globeMaterial.uniforms.globeRotation.value.set(lng, lat);
+				landMaterial.uniforms.globeRotation.value.set(lng, lat);
+				const pov = world.pointOfView();
+
+				if (!app.classList.contains('is-zoomed') && pov.altitude <= FREE_ZOOM_EXPAND_ALTITUDE) {
+					setZoomedLayout(true);
+					controls.autoRotate = false;
+
+					if (!isFreeZooming && selectedPlace && pov.altitude > FREE_ZOOM_TARGET_ALTITUDE) {
+						isFreeZooming = true;
+						world.pointOfView({ ...pov, altitude: FREE_ZOOM_TARGET_ALTITUDE }, 520);
+						window.setTimeout(() => {
+							isFreeZooming = false;
+						}, 560);
+					}
+				}
+
+				if (
+					app.classList.contains('is-zoomed') &&
+					expandedPlaceIds.size === 0 &&
+					pov.altitude < (selectedPlace ? FREE_ZOOM_MIN_ALTITUDE : FREE_ZOOM_GLOBAL_MIN_ALTITUDE) &&
+					!isFreeZooming
+				) {
+					isFreeZooming = true;
+					world.pointOfView({
+						...pov,
+						altitude: selectedPlace ? FREE_ZOOM_MIN_ALTITUDE : FREE_ZOOM_GLOBAL_MIN_ALTITUDE,
+					}, 160);
+					window.setTimeout(() => {
+						isFreeZooming = false;
+					}, 200);
+				}
+
+				if (expandedPlaceIds.size > 0 && !isClusterZooming && pov.altitude > 1.45) {
+					expandedPlaceIds = new Set();
+					setZoomedLayout(false);
+				} else if (
+					app.classList.contains('is-zoomed') &&
+					expandedPlaceIds.size === 0 &&
+					!selectedPlace &&
+					!isFreeZooming &&
+					pov.altitude > FREE_ZOOM_COLLAPSE_ALTITUDE
+				) {
+					setZoomedLayout(false);
+					controls.autoRotate = true;
+				}
+
+				updateMarkersForView();
+			})
+			.pointOfView(GLOBAL_POINT_OF_VIEW);
+
+		controls = world.controls();
+		controls.autoRotate = true;
+		controls.autoRotateSpeed = 0.55;
+		controls.enableZoom = true;
+		controls.zoomSpeed = 0.78;
+		controls.enableDamping = true;
+		controls.dampingFactor = 0.07;
+		controls.minDistance = 8;
+		controls.maxDistance = 680;
+
+		world.renderer().setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+		const utcTimer = window.setInterval(updateSun, 1000);
+		const applyThemeColors = () => {
+			globeMaterial.uniforms.baseColor.value.set(getCssVariable('--random-globe-fill', document.documentElement.classList.contains('dark') ? '#a7b3c4' : '#e5e9f0'));
+			landMaterial.uniforms.baseColor.value.set(getCssVariable('--random-continent', document.documentElement.classList.contains('dark') ? '#88c0d0' : '#5e81ac'));
+			globeMaterial.uniforms.nightColor.value.set(getCssVariable('--random-night', document.documentElement.classList.contains('dark') ? '#2e3440' : '#4c566a'));
+			landMaterial.uniforms.nightColor.value.set(getCssVariable('--random-night', document.documentElement.classList.contains('dark') ? '#2e3440' : '#4c566a'));
+			world.polygonStrokeColor(polygonStrokeColor);
+		};
+		const themeObserver = new MutationObserver(applyThemeColors);
+		themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+
+		function resizeGlobe() {
+			const rect = stage.getBoundingClientRect();
+			const fallback = Math.min(window.innerWidth, window.innerHeight - 96);
+
+			if (app.classList.contains('is-zoomed')) {
+				const width = Math.max(320, Math.floor(rect.width || window.innerWidth));
+				const height = Math.max(320, Math.floor(rect.height || window.innerHeight));
+				globeNode.style.width = `${width}px`;
+				globeNode.style.height = `${height}px`;
+				world.width(width).height(height);
+				return;
+			}
+
+			const size = Math.max(300, Math.floor(Math.min(rect.width, rect.height || fallback)));
+			globeNode.style.width = `${size}px`;
+			globeNode.style.height = `${size}px`;
+			world.width(size).height(size);
+		}
+
+		function setZoomedLayout(isZoomed: boolean) {
+			if (app.classList.contains('is-zoomed') === isZoomed) return;
+			app.classList.toggle('is-zoomed', isZoomed);
+			resizeGlobe();
+			updateMarkersForView(true);
+		}
+
+		function updateMarkersForView(force = false) {
+			const markers = expandedPlaceIds.size > 0
+				? buildExpandedMarkers(places, expandedPlaceIds)
+				: buildMarkerClusters(places, world.pointOfView().altitude);
+			const nextSignature = markerSignature(markers);
+			if (!force && nextSignature === currentMarkerSignature) return;
+
+			currentMarkerSignature = nextSignature;
+			world.htmlElementsData(markers);
+		}
+
+		function createMarker(markerData: GlobeMarker) {
+			const marker = document.createElement('button');
+			const style = categoryStyles[markerData.category] || categoryStyles.coffee;
+			marker.type = 'button';
+			marker.className = markerData.kind === 'cluster'
+				? 'globe-marker globe-marker-cluster'
+				: `globe-marker${markerData.isExpanded ? ' globe-marker-expanded' : ''}`;
+			marker.style.setProperty('--marker-color', style.color);
+			marker.setAttribute('aria-label', markerData.kind === 'cluster'
+				? `${markerData.count} places near ${markerData.city}, ${markerData.country}`
+				: markerData.name);
+
+			if (markerData.kind === 'cluster') {
+				const placePreview = markerData.places
+					.slice(0, 5)
+					.map((place) => `<span>${escapeHtml(place.name)}</span>`)
+					.join('');
+				const remainingCount = markerData.count > 5
+					? `<span>+${markerData.count - 5} more</span>`
+					: '';
+
+				marker.innerHTML = `
+					<span class="globe-marker-preview globe-cluster-preview">
+						<span class="globe-cluster-preview-title">${markerData.count} nearby places</span>
+						<span class="globe-cluster-preview-list">${placePreview}${remainingCount}</span>
+					</span>
+					<span class="globe-marker-cluster-bubble">
+						<span class="globe-cluster-count">${markerData.count}</span>
+					</span>
+				`;
+			} else {
+				marker.innerHTML = `
+					<span class="globe-marker-preview">
+						<img src="${escapeAttribute(markerData.mainImage)}" alt="${escapeAttribute(markerData.name)}" loading="lazy" />
+						<span>${escapeHtml(markerData.name)}</span>
+					</span>
+					<span class="globe-marker-pin">
+						<svg class="globe-marker-shape" viewBox="-4 0 36 36" aria-hidden="true">
+							<path fill="currentColor" d="M14 0c7.73 0 14 5.64 14 12.6C28 23.96 14 36 14 36S0 24.06 0 12.6C0 5.64 6.27 0 14 0Z"/>
+						</svg>
+						<span class="globe-marker-logo">${style.icon}</span>
+					</span>
+				`;
+			}
+
+			marker.addEventListener('click', (event) => {
+				event.stopPropagation();
+				if (markerData.kind === 'cluster') {
+					zoomToCluster(markerData);
+				} else {
+					selectPlace(markerData);
+				}
+			});
+			marker.addEventListener('mouseenter', () => {
+				if (controls) controls.autoRotate = false;
+			});
+			marker.addEventListener('mouseleave', () => {
+				if (controls && !selectedPlace && expandedPlaceIds.size === 0) controls.autoRotate = true;
+			});
+			marker.addEventListener('focus', () => {
+				if (controls) controls.autoRotate = false;
+			});
+			marker.addEventListener('blur', () => {
+				if (controls && !selectedPlace && expandedPlaceIds.size === 0) controls.autoRotate = true;
+			});
+			return marker;
+		}
+
+		function zoomToCluster(cluster: ClusterMarker) {
+			selectedPlace = null;
+			expandedPlaceIds = new Set(cluster.places.map((place) => place.id));
+			isClusterZooming = true;
+			setZoomedLayout(true);
+			app.classList.remove('has-selection');
+			detail.hidden = true;
+			controls.autoRotate = false;
+			resizeGlobe();
+			updateMarkersForView(true);
+			world.pointOfView({
+				lat: cluster.lat,
+				lng: cluster.lng,
+				altitude: Math.min(world.pointOfView().altitude, clusterFocusAltitude(cluster)),
+			}, 1100);
+			window.setTimeout(() => {
+				isClusterZooming = false;
+				updateMarkersForView(true);
+			}, 1120);
+		}
+
+		function selectPlace(place: RandomPlace) {
+			selectedPlace = getPlaceSource(place);
+			selectedImageIndex = 0;
+			app.classList.add('has-selection');
+			detail.hidden = false;
+			controls.autoRotate = false;
+			renderDetail();
+			window.setTimeout(resizeGlobe, 280);
+			world.pointOfView({
+				...getPlaceFocusPosition(place),
+				altitude: expandedPlaceIds.size > 0
+					? world.pointOfView().altitude
+					: Math.min(world.pointOfView().altitude, 1.1),
+			}, 850);
+		}
+
+		function closeDetail() {
+			selectedPlace = null;
+			app.classList.remove('has-selection');
+			detail.hidden = true;
+			controls.autoRotate = expandedPlaceIds.size === 0;
+			window.setTimeout(resizeGlobe, 280);
+		}
+
+		function goBackToGlobal() {
+			selectedPlace = null;
+			expandedPlaceIds = new Set();
+			isFreeZooming = false;
+			app.classList.remove('has-selection');
+			detail.hidden = true;
+			controls.autoRotate = true;
+			setZoomedLayout(false);
+			updateMarkersForView(true);
+			world.pointOfView(GLOBAL_POINT_OF_VIEW, 1100);
+		}
+
+		function forwardWheelToRenderer(event: WheelEvent) {
+			const rendererCanvas = world.renderer().domElement;
+			if (event.target === rendererCanvas) return;
+
+			event.preventDefault();
+			rendererCanvas.dispatchEvent(new WheelEvent('wheel', {
+				altKey: event.altKey,
+				bubbles: true,
+				cancelable: true,
+				clientX: event.clientX,
+				clientY: event.clientY,
+				ctrlKey: event.ctrlKey,
+				deltaMode: event.deltaMode,
+				deltaX: event.deltaX,
+				deltaY: event.deltaY,
+				deltaZ: event.deltaZ,
+				metaKey: event.metaKey,
+				shiftKey: event.shiftKey,
+			}));
+		}
+
+		function renderDetail() {
+			if (!selectedPlace) return;
+			const place = selectedPlace;
+			const style = categoryStyles[place.category] || categoryStyles.coffee;
+			const images = place.images.length > 0 ? place.images : [place.mainImage];
+			const activeImage = images[selectedImageIndex] || place.mainImage;
+			const activeImageLabels = normalizeImageLabels(place.imageLabels?.[selectedImageIndex]);
+			const location = [place.city, place.country].filter(Boolean).join(', ');
+			const date = new Date(`${place.visitedDate}T00:00:00`);
+			const dateLabel = Number.isNaN(date.getTime())
+				? place.visitedDate
+				: date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+
+			detailContent.innerHTML = `
+				<div class="place-photo-wrap">
+					<img class="place-photo" src="${escapeAttribute(activeImage)}" alt="${escapeAttribute(place.name)}" />
+					${images.length > 1 ? `
+						<button class="place-carousel-button is-prev" type="button" aria-label="Previous image">${chevronLeft}</button>
+						<button class="place-carousel-button is-next" type="button" aria-label="Next image">${chevronRight}</button>
+						<div class="place-carousel-count">${selectedImageIndex + 1} / ${images.length}</div>
+					` : ''}
+				</div>
+
+				<div class="place-kicker" style="--place-accent: ${style.color}">
+					<span>${style.icon}</span>
+					${escapeHtml(style.label)}
+				</div>
+
+				<h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">${escapeHtml(place.name)}</h1>
+				<p class="place-meta">${escapeHtml(dateLabel)} · ${escapeHtml(location)}</p>
+
+				${place.menuItems.length > 0 ? `
+					<div class="place-section">
+						<h2>Menu</h2>
+						<ul>
+							${place.menuItems.map((item) => `
+								<li class="${menuItemMatchesLabels(item, activeImageLabels) ? 'is-active' : ''}">
+									${escapeHtml(item)}
+								</li>
+							`).join('')}
+						</ul>
+					</div>
+				` : ''}
+
+				${place.notes ? `
+					<div class="place-section">
+						<h2>Notes</h2>
+						<p>${escapeHtml(place.notes)}</p>
+					</div>
+				` : ''}
+
+				<a class="place-map-link" href="${escapeAttribute(place.googleMapsUrl)}" target="_blank" rel="noreferrer">
+					<span>Open in Google Maps</span>
+					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 6H18m0 0v4.5M18 6 10.5 13.5M6 8.5v9.5h9.5"/>
+					</svg>
+				</a>
+			`;
+
+			detailContent.querySelector('.is-prev')?.addEventListener('click', () => {
+				selectedImageIndex = (selectedImageIndex - 1 + images.length) % images.length;
+				renderDetail();
+			});
+
+			detailContent.querySelector('.is-next')?.addEventListener('click', () => {
+				selectedImageIndex = (selectedImageIndex + 1) % images.length;
+				renderDetail();
+			});
+
+		}
+
+		closeButton?.addEventListener('click', closeDetail);
+		globalBackButton?.addEventListener('click', goBackToGlobal);
+		globeNode.addEventListener('wheel', forwardWheelToRenderer, { passive: false });
+		window.addEventListener('resize', resizeGlobe);
+		window.addEventListener('beforeunload', () => {
+			window.clearInterval(utcTimer);
+			themeObserver.disconnect();
+			globeNode.removeEventListener('wheel', forwardWheelToRenderer);
+		});
+
+		if ('ResizeObserver' in window) {
+			new ResizeObserver(resizeGlobe).observe(stage);
+		}
+
+			requestAnimationFrame(() => {
+			resizeGlobe();
+			updateSun();
+			updateMarkersForView(true);
+			window.setTimeout(() => app.classList.add('is-loaded'), 350);
+		});
+		} catch (error) {
+			console.error('Random globe failed to initialize', error);
+			app.classList.add('is-fallback');
+			setGlobeStatus('enable chrome graphics acceleration');
+		}
+	}
+
+	initRandomGlobe();
+</script>
+
+<style is:global>
+	.random-globe-app {
+		--random-page-bg: #eceff4;
+		--random-globe-fill: #e5e9f0;
+		--random-continent: #88c0d0;
+		--random-continent-stroke: rgba(94, 129, 172, 0.34);
+		--random-night: #4c566a;
+		--random-marker-coffee: #d08770;
+		--random-marker-food: #5e81ac;
+		--random-marker-dessert: #b48ead;
+		--random-marker-icecream: #88c0d0;
+		position: relative;
+		min-height: calc(100vh - 4rem);
+		padding: 5rem 1rem 1rem;
+		background: var(--random-page-bg);
+		overflow: hidden;
+	}
+
+	.dark .random-globe-app {
+		--random-page-bg: #2e3440;
+		--random-globe-fill: #a7b3c4;
+		--random-continent: #88c0d0;
+		--random-continent-stroke: rgba(136, 192, 208, 0.36);
+		--random-night: #2e3440;
+		--random-marker-coffee: #d08770;
+		--random-marker-food: #81a1c1;
+		--random-marker-dessert: #b48ead;
+		--random-marker-icecream: #88c0d0;
+	}
+
+	.random-globe-layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		align-items: center;
+		gap: 1.5rem;
+		width: min(100%, 1280px);
+		min-height: calc(100vh - 6rem);
+		margin: 0 auto;
+		transition: grid-template-columns 280ms ease;
+	}
+
+	.random-globe-app.is-zoomed {
+		min-height: 100vh;
+		padding: 0;
+	}
+
+	.random-globe-app.is-zoomed .random-globe-layout {
+		width: 100%;
+		min-height: 100vh;
+		gap: 0;
+	}
+
+	.random-globe-app.has-selection .random-globe-layout {
+		grid-template-columns: minmax(300px, 0.92fr) minmax(360px, 0.74fr);
+	}
+
+	.random-globe-app.is-zoomed.has-selection .random-globe-layout {
+		grid-template-columns: minmax(0, 1fr) minmax(420px, 0.52fr);
+	}
+
+	.random-globe-stage {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: min(calc(100vh - 7rem), 86vw);
+		min-height: 320px;
+		transition: transform 280ms ease;
+	}
+
+	.random-globe-app.is-zoomed .random-globe-stage {
+		height: 100vh;
+		min-height: 100vh;
+	}
+
+	.random-globe-app.has-selection .random-globe-stage {
+		transform: translateX(-1.5rem);
+	}
+
+	.random-globe-app.is-zoomed.has-selection .random-globe-stage {
+		transform: none;
+	}
+
+	.random-globe-canvas {
+		position: relative;
+		z-index: 2;
+		aspect-ratio: 1;
+		max-width: 100%;
+		max-height: 100%;
+		overflow: hidden;
+		border-radius: 999px;
+		cursor: grab;
+	}
+
+	.random-globe-app.is-zoomed .random-globe-canvas {
+		width: 100%;
+		height: 100%;
+		max-width: none;
+		max-height: none;
+		aspect-ratio: auto;
+		border-radius: 0;
+	}
+
+	.random-globe-canvas canvas {
+		border-radius: inherit;
+	}
+
+	.random-globe-app.is-zoomed .random-globe-canvas canvas {
+		border-radius: 0;
+	}
+
+	.random-globe-fallback {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		opacity: 1;
+		transition: opacity 220ms ease, transform 220ms ease;
+		pointer-events: none;
+	}
+
+	.random-globe-app.is-loaded .random-globe-fallback {
+		opacity: 0;
+		transform: scale(0.98);
+	}
+
+	.random-globe-app.is-fallback .random-globe-fallback {
+		pointer-events: auto;
+	}
+
+	.random-globe-fallback p {
+		max-width: 18rem;
+		margin: 0;
+		color: #4c566a;
+		font-size: 0.88rem;
+		font-weight: 700;
+		text-align: center;
+	}
+
+	.dark .random-globe-fallback p {
+		color: #d8dee9;
+	}
+
+	.fallback-globe {
+		position: relative;
+		width: min(74vh, 58vw, 38rem);
+		aspect-ratio: 1;
+		overflow: hidden;
+		border-radius: 999px;
+		background:
+			radial-gradient(circle at 38% 22%, rgba(136, 192, 208, 0.34), transparent 11%),
+			var(--random-page-bg);
+		box-shadow: inset -36px -42px 70px rgba(46, 52, 64, 0.16);
+		animation: fallback-globe-roll 12s linear infinite;
+	}
+
+	.fallback-continent,
+	.fallback-marker {
+		position: absolute;
+		display: block;
+	}
+
+	.fallback-continent {
+		border-radius: 48% 52% 44% 56%;
+		background: var(--random-continent);
+		box-shadow: inset 0 0 0 0.12rem var(--random-continent-stroke);
+	}
+
+	.fallback-continent-one {
+		top: 8%;
+		left: -4%;
+		width: 36%;
+		height: 72%;
+		transform: rotate(-12deg);
+	}
+
+	.fallback-continent-two {
+		top: 12%;
+		right: 3%;
+		width: 34%;
+		height: 70%;
+		transform: rotate(-20deg);
+	}
+
+	.fallback-continent-three {
+		bottom: -5%;
+		left: 20%;
+		width: 38%;
+		height: 18%;
+		transform: rotate(19deg);
+	}
+
+	.fallback-marker {
+		width: 1.75rem;
+		height: 1.75rem;
+		border: 2px solid rgba(236, 239, 244, 0.8);
+		border-radius: 999px;
+		box-shadow: 0 10px 24px rgba(46, 52, 64, 0.22);
+	}
+
+	.fallback-marker-coffee {
+		top: 26%;
+		left: 24%;
+		background: var(--random-marker-coffee);
+	}
+
+	.fallback-marker-food {
+		top: 34%;
+		left: 32%;
+		background: var(--random-marker-food);
+	}
+
+	.fallback-marker-icecream {
+		top: 24%;
+		right: 22%;
+		background: var(--random-marker-icecream);
+	}
+
+	@keyframes fallback-globe-roll {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+
+	.random-globe-canvas:active {
+		cursor: grabbing;
+	}
+
+	.random-utc-clock {
+		position: fixed;
+		left: 1rem;
+		bottom: 1rem;
+		z-index: 4;
+		border: 1px solid rgba(94, 129, 172, 0.28);
+		border-radius: 999px;
+		background: rgba(236, 239, 244, 0.78);
+		padding: 0.45rem 0.75rem;
+		color: #5e81ac;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+		font-size: 0.75rem;
+		font-weight: 800;
+		letter-spacing: 0;
+		backdrop-filter: blur(12px);
+	}
+
+	.dark .random-utc-clock {
+		border-color: rgba(129, 161, 193, 0.36);
+		background: rgba(46, 52, 64, 0.78);
+		color: #88c0d0;
+	}
+
+	.random-global-back {
+		position: fixed;
+		left: 1rem;
+		bottom: 4.05rem;
+		z-index: 5;
+		display: grid;
+		place-items: center;
+		width: 2.35rem;
+		height: 2.35rem;
+		border: 1px solid rgba(94, 129, 172, 0.28);
+		border-radius: 999px;
+		background: rgba(236, 239, 244, 0.84);
+		color: #5e81ac;
+		opacity: 0;
+		pointer-events: none;
+		backdrop-filter: blur(12px);
+		box-shadow: 0 14px 34px rgba(46, 52, 64, 0.16);
+		transition: opacity 160ms ease, transform 160ms ease, background 160ms ease;
+	}
+
+	.dark .random-global-back {
+		border-color: rgba(129, 161, 193, 0.36);
+		background: rgba(46, 52, 64, 0.78);
+		color: #88c0d0;
+	}
+
+	.random-globe-app.is-zoomed .random-global-back {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	.random-global-back:hover,
+	.random-global-back:focus-visible {
+		background: #5e81ac;
+		color: #eceff4;
+		transform: translateY(-1px);
+	}
+
+	.random-global-back-tooltip {
+		position: absolute;
+		left: calc(100% + 0.55rem);
+		top: 50%;
+		width: max-content;
+		max-width: 12rem;
+		border: 1px solid rgba(94, 129, 172, 0.22);
+		border-radius: 999px;
+		background: rgba(236, 239, 244, 0.94);
+		padding: 0.36rem 0.62rem;
+		color: #4c566a;
+		font-size: 0.72rem;
+		font-weight: 800;
+		opacity: 0;
+		pointer-events: none;
+		transform: translate(-0.25rem, -50%);
+		transition: opacity 140ms ease, transform 140ms ease;
+	}
+
+	.dark .random-global-back-tooltip {
+		border-color: rgba(129, 161, 193, 0.32);
+		background: rgba(46, 52, 64, 0.94);
+		color: #eceff4;
+	}
+
+	.random-global-back:hover .random-global-back-tooltip,
+	.random-global-back:focus-visible .random-global-back-tooltip {
+		opacity: 1;
+		transform: translate(0, -50%);
+	}
+
+	.globe-marker {
+		position: relative;
+		width: 2.7rem;
+		height: 3.2rem;
+		border: 0;
+		padding: 0;
+		background: transparent;
+		color: var(--marker-color);
+		cursor: pointer;
+		pointer-events: auto;
+		transform: translate(-50%, -100%);
+		transition: opacity 250ms ease;
+	}
+
+	.globe-marker-cluster {
+		width: 3.25rem;
+		height: 3.25rem;
+		transform: translate(-50%, -50%);
+		z-index: 50 !important;
+	}
+
+	.globe-marker-expanded {
+		width: 2rem;
+		height: 2.38rem;
+		z-index: 60 !important;
+	}
+
+	.globe-marker-expanded .globe-marker-logo {
+		width: 1.14rem;
+		height: 1.14rem;
+	}
+
+	.globe-marker-expanded .globe-marker-logo svg {
+		width: 0.72rem;
+		height: 0.72rem;
+	}
+
+	.globe-marker-pin {
+		position: relative;
+		display: block;
+		width: 100%;
+		height: 100%;
+		filter: drop-shadow(0 14px 18px rgba(46, 52, 64, 0.22));
+		transition: transform 160ms ease, filter 160ms ease;
+	}
+
+	.globe-marker-shape {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	.globe-marker-logo {
+		position: absolute;
+		left: 50%;
+		top: 39%;
+		display: grid;
+		place-items: center;
+		width: 1.45rem;
+		height: 1.45rem;
+		border-radius: 999px;
+		background: rgba(236, 239, 244, 0.94);
+		color: var(--marker-color);
+		transform: translate(-50%, -50%);
+	}
+
+	.globe-marker-logo svg {
+		width: 0.95rem;
+		height: 0.95rem;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.9;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.globe-marker:hover .globe-marker-pin,
+	.globe-marker:focus-visible .globe-marker-pin {
+		transform: translateY(-2px) scale(1.08);
+		filter: drop-shadow(0 18px 24px rgba(46, 52, 64, 0.3));
+	}
+
+	.globe-marker-cluster-bubble {
+		position: relative;
+		display: grid;
+		place-items: center;
+		width: 100%;
+		height: 100%;
+		border: 2px solid rgba(236, 239, 244, 0.88);
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--marker-color) 24%, rgba(236, 239, 244, 0.92));
+		box-shadow: 0 16px 34px rgba(46, 52, 64, 0.24);
+		transition: transform 160ms ease, box-shadow 160ms ease;
+	}
+
+	.dark .globe-marker-cluster-bubble {
+		border-color: rgba(216, 222, 233, 0.78);
+		background: color-mix(in srgb, var(--marker-color) 30%, rgba(59, 66, 82, 0.92));
+	}
+
+	.globe-cluster-count {
+		display: grid;
+		place-items: center;
+		width: 2.05rem;
+		height: 2.05rem;
+		border-radius: 999px;
+		background: var(--marker-color);
+		color: #eceff4;
+		font-size: 0.95rem;
+		font-weight: 900;
+		line-height: 1;
+	}
+
+	.globe-marker-cluster:hover .globe-marker-cluster-bubble,
+	.globe-marker-cluster:focus-visible .globe-marker-cluster-bubble {
+		transform: translateY(-2px) scale(1.08);
+		box-shadow: 0 20px 42px rgba(46, 52, 64, 0.3);
+	}
+
+	.globe-marker-preview {
+		position: absolute;
+		left: 50%;
+		bottom: calc(100% + 0.65rem);
+		width: 10rem;
+		overflow: hidden;
+		border-radius: 0.75rem;
+		border: 1px solid rgba(216, 222, 233, 0.78);
+		background: rgba(236, 239, 244, 0.94);
+		box-shadow: 0 18px 48px rgba(46, 52, 64, 0.2);
+		color: #2e3440;
+		opacity: 0;
+		pointer-events: none;
+		transform: translate(-50%, 0.35rem) scale(0.96);
+		transition: opacity 160ms ease, transform 160ms ease;
+	}
+
+	.dark .globe-marker-preview {
+		border-color: rgba(129, 161, 193, 0.42);
+		background: rgba(46, 52, 64, 0.94);
+		color: #eceff4;
+	}
+
+	.globe-marker:hover .globe-marker-preview,
+	.globe-marker:focus-visible .globe-marker-preview {
+		opacity: 1;
+		transform: translate(-50%, 0) scale(1);
+	}
+
+	.globe-marker-preview img {
+		display: block;
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		object-fit: cover;
+	}
+
+	.globe-marker-preview span {
+		display: block;
+		padding: 0.5rem 0.65rem;
+		font-size: 0.75rem;
+		font-weight: 700;
+		line-height: 1.15;
+	}
+
+	.globe-cluster-preview {
+		width: 12rem;
+	}
+
+	.globe-cluster-preview .globe-cluster-preview-title {
+		border-bottom: 1px solid rgba(94, 129, 172, 0.18);
+		padding: 0.58rem 0.7rem 0.5rem;
+		color: var(--marker-color);
+		font-size: 0.74rem;
+		font-weight: 900;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.dark .globe-cluster-preview .globe-cluster-preview-title {
+		border-bottom-color: rgba(129, 161, 193, 0.24);
+	}
+
+	.globe-cluster-preview .globe-cluster-preview-list {
+		display: grid;
+		gap: 0.28rem;
+		padding: 0.55rem 0.7rem 0.65rem;
+	}
+
+	.globe-cluster-preview .globe-cluster-preview-list span {
+		overflow: hidden;
+		padding: 0;
+		color: inherit;
+		font-size: 0.76rem;
+		font-weight: 700;
+		line-height: 1.2;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.random-place-detail {
+		position: relative;
+		max-height: calc(100vh - 7rem);
+		overflow: auto;
+		border-left: 1px solid rgba(94, 129, 172, 0.24);
+		padding: 0 0 0 1.5rem;
+		color: #2e3440;
+	}
+
+	.dark .random-place-detail {
+		color: #eceff4;
+		border-left-color: rgba(129, 161, 193, 0.28);
+	}
+
+	.random-place-detail[hidden] {
+		display: none;
+	}
+
+	.random-globe-app.is-zoomed.has-selection .random-place-detail {
+		max-height: calc(100vh - 8rem);
+		margin: 6.25rem 1.25rem 1.25rem 0;
+		padding-left: 1.5rem;
+	}
+
+	.random-place-close {
+		position: sticky;
+		top: 0;
+		z-index: 3;
+		float: right;
+		display: grid;
+		place-items: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		border: 1px solid rgba(94, 129, 172, 0.3);
+		border-radius: 999px;
+		background: rgba(236, 239, 244, 0.84);
+		color: #4c566a;
+		backdrop-filter: blur(10px);
+		transition: background 160ms ease, color 160ms ease;
+	}
+
+	.dark .random-place-close {
+		border-color: rgba(129, 161, 193, 0.34);
+		background: rgba(59, 66, 82, 0.84);
+		color: #d8dee9;
+	}
+
+	.random-place-close:hover,
+	.random-place-close:focus-visible {
+		background: #5e81ac;
+		color: #eceff4;
+	}
+
+	.random-place-content {
+		padding: 0.15rem 0 1rem;
+	}
+
+	.place-photo-wrap {
+		position: relative;
+		overflow: hidden;
+		border-radius: 0.75rem;
+		border: 1px solid rgba(94, 129, 172, 0.24);
+		background: rgba(229, 233, 240, 0.62);
+		box-shadow: 0 22px 60px rgba(46, 52, 64, 0.16);
+	}
+
+	.dark .place-photo-wrap {
+		border-color: rgba(129, 161, 193, 0.28);
+		background: rgba(59, 66, 82, 0.56);
+	}
+
+	.place-photo {
+		display: block;
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		object-fit: cover;
+	}
+
+	.place-carousel-button {
+		position: absolute;
+		top: 50%;
+		display: grid;
+		place-items: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		border: 1px solid rgba(236, 239, 244, 0.56);
+		border-radius: 999px;
+		background: rgba(46, 52, 64, 0.52);
+		color: #eceff4;
+		transform: translateY(-50%);
+		transition: background 160ms ease, transform 160ms ease;
+	}
+
+	.place-carousel-button:hover,
+	.place-carousel-button:focus-visible {
+		background: rgba(46, 52, 64, 0.78);
+		transform: translateY(-50%) scale(1.04);
+	}
+
+	.place-carousel-button.is-prev {
+		left: 0.75rem;
+	}
+
+	.place-carousel-button.is-next {
+		right: 0.75rem;
+	}
+
+	.place-carousel-count {
+		position: absolute;
+		right: 0.85rem;
+		bottom: 0.85rem;
+		border-radius: 999px;
+		background: rgba(46, 52, 64, 0.68);
+		padding: 0.28rem 0.62rem;
+		color: #eceff4;
+		font-size: 0.72rem;
+		font-weight: 700;
+	}
+
+	.place-image-labels {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		margin: 0.85rem 0 0;
+	}
+
+	.place-image-label {
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
+		border: 1px solid rgba(94, 129, 172, 0.28);
+		border-radius: 999px;
+		background: rgba(236, 239, 244, 0.1);
+		padding: 0.38rem 0.72rem;
+		color: #4c566a;
+		font-size: 0.76rem;
+		font-weight: 800;
+		line-height: 1.15;
+		transition: border-color 220ms ease, color 220ms ease, background 220ms ease, transform 220ms ease;
+	}
+
+	.place-image-label::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		background: linear-gradient(90deg, var(--place-accent), #88c0d0, #b48ead, var(--place-accent));
+		background-size: 240% 100%;
+		opacity: 0;
+		transition: opacity 260ms ease;
+	}
+
+	.place-image-label span {
+		position: relative;
+		z-index: 1;
+	}
+
+	.place-image-label:hover,
+	.place-image-label:focus-visible,
+	.place-image-label.is-active {
+		border-color: color-mix(in srgb, var(--place-accent) 74%, #eceff4);
+		background: color-mix(in srgb, var(--place-accent) 12%, transparent);
+		color: #2e3440;
+		transform: translateY(-1px);
+	}
+
+	.place-image-label:hover::before,
+	.place-image-label:focus-visible::before,
+	.place-image-label.is-active::before {
+		opacity: 0.18;
+		animation: image-label-glow 3.6s ease infinite;
+	}
+
+	.dark .place-image-label {
+		border-color: rgba(129, 161, 193, 0.34);
+		background: rgba(59, 66, 82, 0.18);
+		color: #d8dee9;
+	}
+
+	.dark .place-image-label:hover,
+	.dark .place-image-label:focus-visible,
+	.dark .place-image-label.is-active {
+		color: #eceff4;
+	}
+
+	@keyframes image-label-glow {
+		0% {
+			background-position: 0% 50%;
+		}
+		50% {
+			background-position: 100% 50%;
+		}
+		100% {
+			background-position: 0% 50%;
+		}
+	}
+
+	.place-kicker {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+		margin-top: 1.25rem;
+		color: var(--place-accent);
+		font-size: 0.75rem;
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.place-kicker span {
+		display: grid;
+		place-items: center;
+		width: 1.5rem;
+		height: 1.5rem;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--place-accent) 14%, transparent);
+	}
+
+	.place-kicker svg {
+		width: 0.9rem;
+		height: 0.9rem;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.9;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.random-place-content h1 {
+		margin-top: 0.55rem;
+		color: inherit;
+		line-height: 0.98;
+		letter-spacing: 0;
+	}
+
+	.place-meta {
+		margin-top: 0.85rem;
+		color: #4c566a;
+		font-size: 0.95rem;
+		font-weight: 600;
+	}
+
+	.dark .place-meta {
+		color: #d8dee9;
+	}
+
+	.place-section {
+		margin-top: 1.5rem;
+	}
+
+	.place-section h2 {
+		color: inherit;
+		font-size: 0.88rem;
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.place-section p,
+	.place-section li {
+		color: #4c566a;
+		font-size: 1rem;
+		line-height: 1.7;
+	}
+
+	.dark .place-section p,
+	.dark .place-section li {
+		color: #d8dee9;
+	}
+
+	.place-section ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-top: 0.65rem;
+		padding: 0;
+		list-style: none;
+	}
+
+	.place-section li {
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid rgba(94, 129, 172, 0.26);
+		border-radius: 999px;
+		padding: 0.35rem 0.72rem;
+		background: rgba(229, 233, 240, 0.58);
+		text-align: center;
+		font-size: 0.88rem;
+		font-weight: 700;
+		line-height: 1.2;
+		transition: border-color 220ms ease, color 220ms ease, background 220ms ease, transform 220ms ease;
+	}
+
+	.place-section li.is-active {
+		border-color: rgba(46, 52, 64, 0.28);
+		background: rgba(236, 239, 244, 0.72);
+		color: #111827;
+		font-weight: 900;
+		transform: translateY(-1px);
+		animation: menu-item-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	}
+
+	.dark .place-section li {
+		background: rgba(59, 66, 82, 0.58);
+		border-color: rgba(129, 161, 193, 0.28);
+	}
+
+	.dark .place-section li.is-active {
+		border-color: rgba(236, 239, 244, 0.32);
+		background: rgba(59, 66, 82, 0.72);
+		color: #ffffff;
+	}
+
+	@keyframes menu-item-pulse {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.5;
+		}
+	}
+
+	.place-map-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 1.6rem;
+		border-bottom: 1px solid currentColor;
+		padding-bottom: 0.18rem;
+		color: #5e81ac;
+		font-size: 0.95rem;
+		font-weight: 800;
+		text-decoration: none;
+		transition: color 160ms ease;
+	}
+
+	.dark .place-map-link {
+		color: #88c0d0;
+	}
+
+	.place-map-link:hover,
+	.place-map-link:focus-visible {
+		color: #2e3440;
+	}
+
+	.dark .place-map-link:hover,
+	.dark .place-map-link:focus-visible {
+		color: #eceff4;
+	}
+
+	@media (max-width: 900px) {
+		.random-globe-app {
+			min-height: 100vh;
+			overflow: visible;
+			padding: 4.5rem 0.85rem 1.25rem;
+		}
+
+		.random-globe-layout,
+		.random-globe-app.has-selection .random-globe-layout {
+			grid-template-columns: minmax(0, 1fr);
+			min-height: auto;
+		}
+
+		.random-globe-app.is-zoomed .random-globe-layout,
+		.random-globe-app.is-zoomed.has-selection .random-globe-layout {
+			grid-template-columns: minmax(0, 1fr);
+			min-height: 100vh;
+		}
+
+		.random-globe-stage {
+			height: min(74vh, 94vw);
+			min-height: 300px;
+		}
+
+		.random-globe-app.is-zoomed .random-globe-stage {
+			height: 100vh;
+			min-height: 100vh;
+		}
+
+		.random-globe-app.has-selection .random-globe-stage {
+			transform: none;
+		}
+
+		.random-place-detail {
+			max-height: none;
+			border-left: 0;
+			border-top: 1px solid rgba(94, 129, 172, 0.24);
+			padding: 1.2rem 0 0;
+		}
+
+		.dark .random-place-detail {
+			border-top-color: rgba(129, 161, 193, 0.28);
+		}
+
+		.random-globe-app.is-zoomed.has-selection .random-place-detail {
+			max-height: none;
+			margin: 0;
+			padding: 1.2rem 0.85rem 1.5rem;
+			background: var(--random-page-bg);
+		}
+	}
+
+	@media (max-width: 520px) {
+		.globe-marker {
+			width: 2.25rem;
+			height: 2.68rem;
+		}
+
+		.globe-marker-logo {
+			width: 1.22rem;
+			height: 1.22rem;
+		}
+
+		.globe-marker-logo svg {
+			width: 0.78rem;
+			height: 0.78rem;
+		}
+
+		.globe-marker-preview {
+			width: 8.5rem;
+		}
+
+		.globe-marker-cluster {
+			width: 2.75rem;
+			height: 2.75rem;
+		}
+
+		.globe-cluster-count {
+			width: 1.74rem;
+			height: 1.74rem;
+			font-size: 0.82rem;
+		}
+
+		.globe-cluster-preview {
+			width: 10rem;
+		}
+	}
+</style>

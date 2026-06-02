@@ -1,0 +1,140 @@
+---
+import Header from '../components/Header.astro';
+import Layout from '../layouts/Layout.astro';
+import RandomGlobe from '../components/RandomGlobe.astro';
+
+const placeModules = import.meta.glob('../data/yun-is-day/*/description.md');
+const imageModules = import.meta.glob('../data/yun-is-day/*/imgs/*.{png,jpg,jpeg,webp,gif,svg}', { eager: true });
+
+type PlaceCategory = 'coffee' | 'food' | 'dessert' | 'icecream';
+type ImageLabelValue = string | string[];
+type PlaceImageEntry = string | {
+	src?: string;
+	file?: string;
+	name?: string;
+	label?: ImageLabelValue;
+	item?: ImageLabelValue;
+};
+
+type PlaceFrontmatter = {
+	name: string;
+	category: PlaceCategory;
+	visitedDate: string | Date;
+	city?: string;
+	country?: string;
+	location?: string;
+	lat: number;
+	lng: number;
+	mainImage: string;
+	images?: PlaceImageEntry[];
+	imageLabels?: Record<string, ImageLabelValue> | ImageLabelValue[];
+	menuItems?: string[];
+	googleMapsUrl: string;
+	notes?: string;
+};
+
+function imageMapForFolder(folder: string) {
+	return Object.entries(imageModules)
+		.filter(([path]) => path.includes(`/yun-is-day/${folder}/imgs/`))
+		.reduce<Record<string, string>>((acc, [path, mod]) => {
+			const filename = path.split('/').at(-1);
+			if (filename) acc[filename] = (mod as { default: { src: string } }).default.src;
+			return acc;
+		}, {});
+}
+
+function normalizeDate(value: string | Date) {
+	if (value && typeof (value as Date).toISOString === 'function') {
+		return (value as Date).toISOString().slice(0, 10);
+	}
+	return String(value).slice(0, 10);
+}
+
+function normalizeLabels(value?: ImageLabelValue) {
+	if (!value) return [];
+	return (Array.isArray(value) ? value : [value])
+		.map((label) => String(label).trim())
+		.filter(Boolean);
+}
+
+function normalizeImageEntry(entry: PlaceImageEntry) {
+	if (typeof entry === 'string') {
+		return {
+			name: entry,
+			labels: [],
+		};
+	}
+
+	return {
+		name: entry.src || entry.file || entry.name || '',
+		labels: normalizeLabels(entry.label || entry.item),
+	};
+}
+
+function imageLabelsFor(frontmatter: PlaceFrontmatter, filename: string, index: number, inlineLabels: string[] = []) {
+	if (inlineLabels.length > 0) return inlineLabels;
+	if (Array.isArray(frontmatter.imageLabels)) return normalizeLabels(frontmatter.imageLabels[index]);
+	return normalizeLabels(frontmatter.imageLabels?.[filename]);
+}
+
+const places = (await Promise.all(Object.entries(placeModules).map(async ([path, resolver]) => {
+	const folder = path.split('/').at(-2) || '';
+	const post = await resolver() as {
+		frontmatter: PlaceFrontmatter;
+		rawContent?: () => string;
+	};
+	const frontmatter = post.frontmatter;
+	const imagesByName = imageMapForFolder(folder);
+	const listedImageEntries = frontmatter.images?.length
+		? frontmatter.images.map(normalizeImageEntry)
+		: Object.keys(imagesByName).sort().map((name) => ({ name, labels: [] }));
+	const imageEntries: ReturnType<typeof normalizeImageEntry>[] = [];
+	const seenImageNames = new Set<string>();
+	const addImageEntry = (entry: ReturnType<typeof normalizeImageEntry>) => {
+		if (!entry.name || seenImageNames.has(entry.name)) return;
+		seenImageNames.add(entry.name);
+		imageEntries.push(entry);
+	};
+
+	addImageEntry({ name: frontmatter.mainImage, labels: [] });
+	listedImageEntries.forEach(addImageEntry);
+
+	const resolvedImages = imageEntries
+		.map((entry, index) => ({
+			src: imagesByName[entry.name],
+			labels: imageLabelsFor(frontmatter, entry.name, index, entry.labels),
+		}))
+		.filter((image) => Boolean(image.src));
+	const images = resolvedImages.map((image) => image.src);
+	const imageLabels = resolvedImages.map((image) => image.labels);
+	const mainImage = imagesByName[frontmatter.mainImage] || images[0] || '';
+	const notes = frontmatter.notes || post.rawContent?.().trim() || undefined;
+	const locationParts = frontmatter.location
+		? [frontmatter.location]
+		: [frontmatter.city, frontmatter.country].filter(Boolean);
+
+	return {
+		id: folder,
+		name: frontmatter.name,
+		category: frontmatter.category,
+		visitedDate: normalizeDate(frontmatter.visitedDate),
+		city: frontmatter.city || locationParts.join(', '),
+		country: frontmatter.country || '',
+		lat: frontmatter.lat,
+		lng: frontmatter.lng,
+		mainImage,
+		images: images.length ? images : [mainImage].filter(Boolean),
+		imageLabels: images.length ? imageLabels : [],
+		menuItems: frontmatter.menuItems || [],
+		notes,
+		googleMapsUrl: frontmatter.googleMapsUrl,
+	};
+}))).sort((a, b) => b.visitedDate.localeCompare(a.visitedDate));
+---
+
+<Layout title="Around the World | Jiyoon Pyo">
+	<Header />
+	<main>
+		<RandomGlobe places={places} />
+	</main>
+</Layout>
