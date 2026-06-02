@@ -10,10 +10,15 @@ mainImage: coffee-main.svg
 images:
   - coffee-main.svg
   - coffee-extra.svg
+imageLabels:
+  20260531_105140.jpg:
+    - Ice Latte
+  20260531_132018.jpg:
+    - Toasted Monkey Latte (Seasonal)
 menuItems:
   - Latte
   - House pastry
 googleMapsUrl: https://maps.app.goo.gl/X16wqPtfJPzDYt21A
 ---
 
-Replace this starter entry with one of your own coffee memories.
+

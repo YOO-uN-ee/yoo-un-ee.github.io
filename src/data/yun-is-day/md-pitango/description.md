@@ -6,14 +6,20 @@ city: Baltimore
 country: Maryland
 lat: 39.282382
 lng: -76.5962868
-mainImage: icecream-main.svg
+mainImage: 20260515_154624.jpg
 images:
-  - icecream-main.svg
-  - icecream-extra.svg
+  - 20260515_224917(0).jpg
+  - 20260515_154620.jpg
+imageLabels:
+  20260515_154624.jpg:
+    - Blood Orange Sorbet
+    - Crema
+  20260515_224917(0).jpg:
+    - Blood Orange Sorbet
+    - Stracciatella
 menuItems:
-  - Pistachio
-  - Vanilla
+  - Blood Orange Sorbet
+  - Crema
+  - Stracciatella
 googleMapsUrl: https://maps.app.goo.gl/maBc6213zCNywKjS7
 ---
-
-Swap this with one of your real ice cream photos.

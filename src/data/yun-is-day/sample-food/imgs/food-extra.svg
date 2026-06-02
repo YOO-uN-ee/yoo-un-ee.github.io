@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-label="Small plates placeholder photo">
-	<rect width="1200" height="900" fill="#e0f2fe"/>
-	<circle cx="430" cy="450" r="190" fill="#ffffff"/>
-	<circle cx="770" cy="450" r="190" fill="#ffffff"/>
-	<path d="M345 455c55-60 138-60 196 0" stroke="#f97316" stroke-width="42" stroke-linecap="round" fill="none"/>
-	<path d="M700 410h140M690 482h160" stroke="#334155" stroke-width="38" stroke-linecap="round"/>
-	<circle cx="520" cy="370" r="25" fill="#22c55e"/>
-	<circle cx="815" cy="555" r="25" fill="#ef4444"/>
-</svg>

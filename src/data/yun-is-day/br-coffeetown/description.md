@@ -1,5 +1,5 @@
 ---
-name: Café Cardin
+name: Coffeetown
 category: coffee
 visitedDate: 2026-04-27
 city: Rio de Janeiro
@@ -15,5 +15,3 @@ menuItems:
   - House pastry
 googleMapsUrl: https://maps.app.goo.gl/1qDG4N99KSncmzWj7
 ---
-
-Replace this starter entry with one of your own coffee memories.
