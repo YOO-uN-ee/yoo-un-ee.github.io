@@ -16,4 +16,4 @@ menuItems:
 googleMapsUrl: https://maps.app.goo.gl/FGxiRrp4NvD1dW798
 ---
 
-
+Replace this starter entry with one of your own coffee memories.
