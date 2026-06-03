@@ -6,14 +6,17 @@ city: Rio de Janeiro
 country: Brazil
 lat: -22.9596214
 lng: -43.3225186
-mainImage: icecream-main.svg
+mainImage: 1.jpg
 images:
-  - icecream-main.svg
-  - icecream-extra.svg
+  - 2.jpg
+  - 3.jpg
+  - 4.jpg
+imageLabels:
+  1.jpg:
+    - Stracciatella
+    - Pistachio
 menuItems:
+  - Stracciatella
   - Pistachio
-  - Vanilla
 googleMapsUrl: https://maps.app.goo.gl/2ZaSwfrvWkQ9DkBj9
 ---
-
-Swap this with one of your real ice cream photos.

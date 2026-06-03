@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-label="Dessert counter placeholder photo">
-	<rect width="1200" height="900" fill="#fce7f3"/>
-	<rect x="240" y="560" width="720" height="80" rx="40" fill="#be185d" opacity="0.18"/>
-	<rect x="365" y="310" width="470" height="250" rx="30" fill="#fff7ed"/>
-	<path d="M365 410h470" stroke="#f9a8d4" stroke-width="42"/>
-	<circle cx="505" cy="300" r="34" fill="#ef4444"/>
-	<circle cx="610" cy="300" r="34" fill="#f59e0b"/>
-	<circle cx="715" cy="300" r="34" fill="#22c55e"/>
-</svg>

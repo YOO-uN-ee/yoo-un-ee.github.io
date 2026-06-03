@@ -6,14 +6,15 @@ city: Baltimore
 country: Maryland
 lat: 39.2896238
 lng: -76.5897084
-mainImage: coffee-main.svg
+mainImage: 1.jpg
 images:
-  - coffee-main.svg
-  - coffee-extra.svg
+  - 2.jpg
+imageLabels:
+  1.jpg:
+    - Ice Latte
 menuItems:
-  - Latte
-  - House pastry
+  - Ice Latte
 googleMapsUrl: https://maps.app.goo.gl/m46wAZSkofnVdcgW6
 ---
 
-Replace this starter entry with one of your own coffee memories.
+

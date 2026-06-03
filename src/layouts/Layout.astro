@@ -5,15 +5,11 @@ interface Props {
 
 const { title } = Astro.props;
 
-
-const theme = Astro.cookies.get('theme')?.value || 'light';
-const isDark = theme === 'dark';
-
 import '../styles/global.css';
 ---
 
 <!doctype html>
-<html lang="en" class={isDark ? 'dark' : ''} data-theme={isDark ? 'nord-dark' : 'nord'}>
+<html lang="en" data-theme="nord">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="description" content="Full Stack Developer Portfolio" />
@@ -33,8 +29,9 @@ import '../styles/global.css';
 				}
 			}
 
-			// Initialize theme from localStorage if possible, to stay in sync
-			const savedTheme = localStorage.getItem('theme');
+			// Initialize theme from browser storage so static prerendering never needs request headers.
+			const cookieTheme = document.cookie.match(/(?:^|; )theme=(dark|light)(?:;|$)/)?.[1];
+			const savedTheme = localStorage.getItem('theme') || cookieTheme;
 			if (savedTheme) {
 				document.documentElement.classList.toggle('dark', savedTheme === 'dark');
 				document.documentElement.setAttribute('data-theme', savedTheme === 'dark' ? 'nord-dark' : 'nord');

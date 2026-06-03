@@ -10,10 +10,14 @@ mainImage: coffee-main.svg
 images:
   - coffee-main.svg
   - coffee-extra.svg
+imageLabels:
+  1.jpg:
+    - Stracciatella
+    - Pistachio
 menuItems:
   - Latte
   - House pastry
 googleMapsUrl: https://maps.app.goo.gl/hFtx53byWndRN12f9
 ---
 
-Replace this starter entry with one of your own coffee memories.
+

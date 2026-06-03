@@ -6,14 +6,21 @@ city: Baltimore
 country: Maryland
 lat: 39.3188096
 lng: -76.623963
-mainImage: coffee-main.svg
+mainImage: 1.jpg
 images:
-  - coffee-main.svg
-  - coffee-extra.svg
+  - 2.jpg
+  - 3.jpg
+imageLabels:
+  1.jpg:
+    - Ice Latte
+  3.jpg:
+    - Tamago Sando
+  2.jpg:
+    - Italian 
 menuItems:
-  - Latte
-  - House pastry
+  - Ice Latte
+  - Tamago Sando
 googleMapsUrl: https://maps.app.goo.gl/6iodDmCXHk6HA4MV6
 ---
 
-Replace this starter entry with one of your own coffee memories.
+

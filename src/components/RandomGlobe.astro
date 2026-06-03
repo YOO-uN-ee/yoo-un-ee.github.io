@@ -30,8 +30,12 @@ const { places } = Astro.props;
 >
 	<div class="random-globe-layout">
 		<div class="random-globe-stage" aria-label="Visited places globe">
-			<div id="random-globe-fallback" class="random-globe-fallback" aria-live="polite">
-				<p id="random-globe-status">Loading globe</p>
+			<div id="random-globe-fallback" class="random-globe-fallback flex items-center justify-center min-h-[400px] parallax-section" aria-live="polite">
+				<div class="text-center">
+					<h2 id="random-globe-status" class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white animate-pulse">
+						Loading Globe
+					</h2>
+				</div>
 			</div>
 			<div id="random-globe-canvas" class="random-globe-canvas"></div>
 		</div>
@@ -47,7 +51,7 @@ const { places } = Astro.props;
 	</div>
 
 	<button id="random-global-back" class="random-global-back" type="button" aria-label="go back to global">
-		<span class="random-global-back-tooltip">go back to global</span>
+		<span class="random-global-back-tooltip">Back to Global View</span>
 		<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7"/>
 		</svg>
@@ -136,6 +140,7 @@ const { places } = Astro.props;
 	const chevronLeft = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7"/></svg>';
 	const chevronRight = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"/></svg>';
 	const EARTH_RADIUS_KM = 6371;
+	const KM_PER_DEGREE = 111.32;
 	const GLOBAL_POINT_OF_VIEW = { lat: 22, lng: -35, altitude: 2.25 };
 	const FREE_ZOOM_EXPAND_ALTITUDE = 0.95;
 	const FREE_ZOOM_TARGET_ALTITUDE = 0.64;
@@ -252,6 +257,22 @@ const { places } = Astro.props;
 		return value * Math.PI / 180;
 	}
 
+	function toDegrees(value: number) {
+		return value * 180 / Math.PI;
+	}
+
+	function clamp(value: number, min: number, max: number) {
+		return Math.min(max, Math.max(min, value));
+	}
+
+	function normalizeLongitude(value: number) {
+		return ((((value + 180) % 360) + 360) % 360) - 180;
+	}
+
+	function longitudeDelta(lng: number, centerLng: number) {
+		return normalizeLongitude(lng - centerLng);
+	}
+
 	function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
 		const dLat = toRadians(b.lat - a.lat);
 		const dLng = toRadians(b.lng - a.lng);
@@ -263,19 +284,24 @@ const { places } = Astro.props;
 		return 2 * EARTH_RADIUS_KM * Math.asin(Math.min(1, Math.sqrt(h)));
 	}
 
+	function averageLongitude(places: RandomPlace[]) {
+		const sum = places.reduce((acc, place) => {
+			const lng = toRadians(place.lng);
+			acc.sin += Math.sin(lng);
+			acc.cos += Math.cos(lng);
+			return acc;
+		}, { sin: 0, cos: 0 });
+
+		if (sum.sin === 0 && sum.cos === 0) return places[0]?.lng || 0;
+		return normalizeLongitude(toDegrees(Math.atan2(sum.sin, sum.cos)));
+	}
+
 	function clusterDistanceForAltitude(altitude = 2.25) {
 		if (altitude > 1.85) return 35;
 		if (altitude > 1.25) return 12;
 		if (altitude > 0.92) return 4;
 		if (altitude > 0.68) return 1.1;
 		return 0.12;
-	}
-
-	function clusterFocusAltitude(cluster: ClusterMarker) {
-		if (cluster.maxDistanceKm > 18) return 0.18;
-		if (cluster.maxDistanceKm > 6) return 0.1;
-		if (cluster.maxDistanceKm > 2) return 0.032;
-		return 0.024;
 	}
 
 	function markerSignature(markers: GlobeMarker[]) {
@@ -312,15 +338,89 @@ const { places } = Astro.props;
 		return (Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'coffee') as RandomPlace['category'];
 	}
 
+	function getDuplicateExpandedPosition(
+		place: RandomPlace,
+		duplicates: RandomPlace[],
+	) {
+		if (duplicates.length < 2) return place;
+
+		const index = duplicates.findIndex((duplicate) => duplicate.id === place.id);
+		const angle = -Math.PI / 2 + (Math.PI * 2 * Math.max(0, index)) / duplicates.length;
+		const radiusKm = 0.18 + duplicates.length * 0.04;
+		const lngScale = KM_PER_DEGREE * Math.max(0.18, Math.cos(toRadians(place.lat)));
+
+		return {
+			lat: place.lat + Math.sin(angle) * radiusKm / KM_PER_DEGREE,
+			lng: normalizeLongitude(place.lng + Math.cos(angle) * radiusKm / lngScale),
+		};
+	}
+
 	function buildExpandedMarkers(places: RandomPlace[], expandedPlaceIds: Set<string>) {
 		const sortedPlaces = [...places].sort((a, b) =>
 			[a.country, a.city, a.name].join('|').localeCompare([b.country, b.city, b.name].join('|'))
 		);
+		const duplicateGroups = sortedPlaces.reduce<Map<string, RandomPlace[]>>((groups, place) => {
+			if (!expandedPlaceIds.has(place.id)) return groups;
+			const key = `${place.lat.toFixed(5)}:${place.lng.toFixed(5)}`;
+			groups.set(key, [...(groups.get(key) || []), place]);
+			return groups;
+		}, new Map());
 
 		return sortedPlaces.map((place) => {
 			if (!expandedPlaceIds.has(place.id)) return createPlaceMarker(place);
-			return createPlaceMarker(place, place, true);
+			const duplicates = duplicateGroups.get(`${place.lat.toFixed(5)}:${place.lng.toFixed(5)}`) || [place];
+			return createPlaceMarker(place, getDuplicateExpandedPosition(place, duplicates), true);
 		});
+	}
+
+	function getClusterFocusView(clusterPlaces: RandomPlace[]) {
+		if (clusterPlaces.length === 0) return GLOBAL_POINT_OF_VIEW;
+		if (clusterPlaces.length === 1) {
+			return {
+				lat: clusterPlaces[0].lat,
+				lng: clusterPlaces[0].lng,
+				altitude: 0.7,
+			};
+		}
+
+		const roughCenter = {
+			lat: clusterPlaces.reduce((sum, place) => sum + place.lat, 0) / clusterPlaces.length,
+			lng: averageLongitude(clusterPlaces),
+		};
+		const lngScale = KM_PER_DEGREE * Math.max(0.18, Math.cos(toRadians(roughCenter.lat)));
+		const projected = clusterPlaces.map((place) => ({
+			place,
+			x: longitudeDelta(place.lng, roughCenter.lng) * lngScale,
+			y: (place.lat - roughCenter.lat) * KM_PER_DEGREE,
+		}));
+		const minX = Math.min(...projected.map((point) => point.x));
+		const maxX = Math.max(...projected.map((point) => point.x));
+		const minY = Math.min(...projected.map((point) => point.y));
+		const maxY = Math.max(...projected.map((point) => point.y));
+		const xSpanKm = maxX - minX;
+		const ySpanKm = maxY - minY;
+		const centerX = (minX + maxX) / 2;
+		const centerY = (minY + maxY) / 2;
+		const maxSpanKm = Math.max(xSpanKm, ySpanKm);
+		const rect = stage?.getBoundingClientRect();
+		const aspect = clamp((rect?.width || window.innerWidth) / Math.max(1, rect?.height || window.innerHeight), 0.62, 2.35);
+		const markerPaddingKm = Math.max(clusterPlaces.length <= 2 ? 2.2 : 3.2, Math.sqrt(clusterPlaces.length) * 1.15);
+		const paddedXKm = Math.max(xSpanKm, markerPaddingKm);
+		const paddedYKm = Math.max(ySpanKm, markerPaddingKm);
+		const requiredWidthKm = Math.max(paddedXKm / 0.84, paddedYKm * aspect / 0.78);
+		const altitude = clusterPlaces.length <= 2 && maxSpanKm < 3
+			? 0.032
+			: clamp(
+				0.014 + Math.sqrt(requiredWidthKm) * 0.0036 + Math.min(0.006, clusterPlaces.length * 0.0008),
+				0.026,
+				0.09,
+			);
+
+		return {
+			lat: roughCenter.lat + centerY / KM_PER_DEGREE,
+			lng: normalizeLongitude(roughCenter.lng + centerX / lngScale),
+			altitude,
+		};
 	}
 
 	function getPlaceFocusPosition(place: RandomPlace) {
@@ -412,6 +512,7 @@ const { places } = Astro.props;
 		let expandedPlaceIds = new Set<string>();
 		let isClusterZooming = false;
 		let isFreeZooming = false;
+		let isReturningGlobal = false;
 
 		try {
 			const [
@@ -470,76 +571,77 @@ const { places } = Astro.props;
 				updateUtcClock(now);
 			};
 
-		const world = Globe()(globeNode)
-			.backgroundColor('rgba(0,0,0,0)')
-			.showAtmosphere(false)
-			.globeMaterial(globeMaterial)
-			.polygonsData(landFeatures)
-			.polygonCapMaterial(landMaterial)
-			.polygonSideColor(() => 'rgba(0,0,0,0)')
-			.polygonStrokeColor(polygonStrokeColor)
-			.polygonAltitude(0.003)
-			.htmlElementsData([])
-			.htmlLat('lat')
-			.htmlLng('lng')
-			.htmlAltitude(0.03)
-			.htmlTransitionDuration(250)
-			.htmlElement(createMarker)
-			.htmlElementVisibilityModifier((el, isVisible) => {
-				el.style.opacity = isVisible ? '1' : '0';
-				el.style.pointerEvents = isVisible ? 'auto' : 'none';
-			})
-			.onZoom(({ lng, lat }) => {
-				globeMaterial.uniforms.globeRotation.value.set(lng, lat);
-				landMaterial.uniforms.globeRotation.value.set(lng, lat);
-				const pov = world.pointOfView();
+			const world = Globe()(globeNode)
+				.backgroundColor('rgba(0,0,0,0)')
+				.showAtmosphere(false)
+				.globeMaterial(globeMaterial)
+				.polygonsData(landFeatures)
+				.polygonCapMaterial(landMaterial)
+				.polygonSideColor(() => 'rgba(0,0,0,0)')
+				.polygonStrokeColor(polygonStrokeColor)
+				.polygonAltitude(0.003)
+				.htmlElementsData([])
+				.htmlLat('lat')
+				.htmlLng('lng')
+				.htmlAltitude(0.03)
+				.htmlTransitionDuration(250)
+				.htmlElement(createMarker)
+				.htmlElementVisibilityModifier((el, isVisible) => {
+					el.style.opacity = isVisible ? '1' : '0';
+					el.style.pointerEvents = isVisible ? 'auto' : 'none';
+				})
+				.onZoom(({ lng, lat }) => {
+					globeMaterial.uniforms.globeRotation.value.set(lng, lat);
+					landMaterial.uniforms.globeRotation.value.set(lng, lat);
+					const pov = world.pointOfView();
 
-				if (!app.classList.contains('is-zoomed') && pov.altitude <= FREE_ZOOM_EXPAND_ALTITUDE) {
-					setZoomedLayout(true);
-					controls.autoRotate = false;
+					if (!isReturningGlobal && !app.classList.contains('is-zoomed') && pov.altitude <= FREE_ZOOM_EXPAND_ALTITUDE) {
+						setZoomedLayout(true);
+						controls.autoRotate = false;
 
-					if (!isFreeZooming && selectedPlace && pov.altitude > FREE_ZOOM_TARGET_ALTITUDE) {
+						if (!isFreeZooming && selectedPlace && pov.altitude > FREE_ZOOM_TARGET_ALTITUDE) {
+							isFreeZooming = true;
+							world.pointOfView({ ...pov, altitude: FREE_ZOOM_TARGET_ALTITUDE }, 520);
+							window.setTimeout(() => {
+								isFreeZooming = false;
+							}, 560);
+						}
+					}
+
+					if (
+						!isReturningGlobal &&
+						app.classList.contains('is-zoomed') &&
+						expandedPlaceIds.size === 0 &&
+						pov.altitude < (selectedPlace ? FREE_ZOOM_MIN_ALTITUDE : FREE_ZOOM_GLOBAL_MIN_ALTITUDE) &&
+						!isFreeZooming
+					) {
 						isFreeZooming = true;
-						world.pointOfView({ ...pov, altitude: FREE_ZOOM_TARGET_ALTITUDE }, 520);
+						world.pointOfView({
+							...pov,
+							altitude: selectedPlace ? FREE_ZOOM_MIN_ALTITUDE : FREE_ZOOM_GLOBAL_MIN_ALTITUDE,
+						}, 160);
 						window.setTimeout(() => {
 							isFreeZooming = false;
-						}, 560);
+						}, 200);
 					}
-				}
 
-				if (
-					app.classList.contains('is-zoomed') &&
-					expandedPlaceIds.size === 0 &&
-					pov.altitude < (selectedPlace ? FREE_ZOOM_MIN_ALTITUDE : FREE_ZOOM_GLOBAL_MIN_ALTITUDE) &&
-					!isFreeZooming
-				) {
-					isFreeZooming = true;
-					world.pointOfView({
-						...pov,
-						altitude: selectedPlace ? FREE_ZOOM_MIN_ALTITUDE : FREE_ZOOM_GLOBAL_MIN_ALTITUDE,
-					}, 160);
-					window.setTimeout(() => {
-						isFreeZooming = false;
-					}, 200);
-				}
+					if (!isReturningGlobal && expandedPlaceIds.size > 0 && !isClusterZooming && pov.altitude > 1.45) {
+						expandedPlaceIds = new Set();
+						setZoomedLayout(false);
+					} else if (
+						app.classList.contains('is-zoomed') &&
+						expandedPlaceIds.size === 0 &&
+						!selectedPlace &&
+						!isFreeZooming &&
+						pov.altitude > FREE_ZOOM_COLLAPSE_ALTITUDE
+					) {
+						setZoomedLayout(false);
+						controls.autoRotate = true;
+					}
 
-				if (expandedPlaceIds.size > 0 && !isClusterZooming && pov.altitude > 1.45) {
-					expandedPlaceIds = new Set();
-					setZoomedLayout(false);
-				} else if (
-					app.classList.contains('is-zoomed') &&
-					expandedPlaceIds.size === 0 &&
-					!selectedPlace &&
-					!isFreeZooming &&
-					pov.altitude > FREE_ZOOM_COLLAPSE_ALTITUDE
-				) {
-					setZoomedLayout(false);
-					controls.autoRotate = true;
-				}
-
-				updateMarkersForView();
-			})
-			.pointOfView(GLOBAL_POINT_OF_VIEW);
+					updateMarkersForView();
+				})
+				.pointOfView(GLOBAL_POINT_OF_VIEW);
 
 		controls = world.controls();
 		controls.autoRotate = true;
@@ -548,7 +650,7 @@ const { places } = Astro.props;
 		controls.zoomSpeed = 0.78;
 		controls.enableDamping = true;
 		controls.dampingFactor = 0.07;
-		controls.minDistance = 8;
+		controls.minDistance = 2.5;
 		controls.maxDistance = 680;
 
 		world.renderer().setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
@@ -669,9 +771,11 @@ const { places } = Astro.props;
 		}
 
 		function zoomToCluster(cluster: ClusterMarker) {
+			const focusView = getClusterFocusView(cluster.places);
 			selectedPlace = null;
 			expandedPlaceIds = new Set(cluster.places.map((place) => place.id));
 			isClusterZooming = true;
+			isReturningGlobal = false;
 			setZoomedLayout(true);
 			app.classList.remove('has-selection');
 			detail.hidden = true;
@@ -679,9 +783,9 @@ const { places } = Astro.props;
 			resizeGlobe();
 			updateMarkersForView(true);
 			world.pointOfView({
-				lat: cluster.lat,
-				lng: cluster.lng,
-				altitude: Math.min(world.pointOfView().altitude, clusterFocusAltitude(cluster)),
+				lat: focusView.lat,
+				lng: focusView.lng,
+				altitude: focusView.altitude,
 			}, 1100);
 			window.setTimeout(() => {
 				isClusterZooming = false;
@@ -716,13 +820,21 @@ const { places } = Astro.props;
 		function goBackToGlobal() {
 			selectedPlace = null;
 			expandedPlaceIds = new Set();
+			isClusterZooming = false;
 			isFreeZooming = false;
+			isReturningGlobal = true;
 			app.classList.remove('has-selection');
 			detail.hidden = true;
-			controls.autoRotate = true;
+			controls.autoRotate = false;
 			setZoomedLayout(false);
 			updateMarkersForView(true);
 			world.pointOfView(GLOBAL_POINT_OF_VIEW, 1100);
+			window.setTimeout(() => {
+				isReturningGlobal = false;
+				setZoomedLayout(false);
+				updateMarkersForView(true);
+				controls.autoRotate = true;
+			}, 1120);
 		}
 
 		function forwardWheelToRenderer(event: WheelEvent) {
@@ -982,19 +1094,6 @@ const { places } = Astro.props;
 		pointer-events: auto;
 	}
 
-	.random-globe-fallback p {
-		max-width: 18rem;
-		margin: 0;
-		color: #4c566a;
-		font-size: 0.88rem;
-		font-weight: 700;
-		text-align: center;
-	}
-
-	.dark .random-globe-fallback p {
-		color: #d8dee9;
-	}
-
 	.fallback-globe {
 		position: relative;
 		width: min(74vh, 58vw, 38rem);
@@ -1194,25 +1293,13 @@ const { places } = Astro.props;
 		height: 3.25rem;
 		transform: translate(-50%, -50%);
 		z-index: 50 !important;
-	}
+		}
 
-	.globe-marker-expanded {
-		width: 2rem;
-		height: 2.38rem;
-		z-index: 60 !important;
-	}
+		.globe-marker-expanded {
+			z-index: 60 !important;
+		}
 
-	.globe-marker-expanded .globe-marker-logo {
-		width: 1.14rem;
-		height: 1.14rem;
-	}
-
-	.globe-marker-expanded .globe-marker-logo svg {
-		width: 0.72rem;
-		height: 0.72rem;
-	}
-
-	.globe-marker-pin {
+		.globe-marker-pin {
 		position: relative;
 		display: block;
 		width: 100%;
@@ -1512,7 +1599,6 @@ const { places } = Astro.props;
 		font-size: 0.76rem;
 		font-weight: 800;
 		line-height: 1.15;
-		transition: border-color 220ms ease, color 220ms ease, background 220ms ease, transform 220ms ease;
 	}
 
 	.place-image-label::before {
@@ -1524,7 +1610,6 @@ const { places } = Astro.props;
 		background: linear-gradient(90deg, var(--place-accent), #88c0d0, #b48ead, var(--place-accent));
 		background-size: 240% 100%;
 		opacity: 0;
-		transition: opacity 260ms ease;
 	}
 
 	.place-image-label span {
@@ -1538,14 +1623,12 @@ const { places } = Astro.props;
 		border-color: color-mix(in srgb, var(--place-accent) 74%, #eceff4);
 		background: color-mix(in srgb, var(--place-accent) 12%, transparent);
 		color: #2e3440;
-		transform: translateY(-1px);
 	}
 
 	.place-image-label:hover::before,
 	.place-image-label:focus-visible::before,
 	.place-image-label.is-active::before {
 		opacity: 0.18;
-		animation: image-label-glow 3.6s ease infinite;
 	}
 
 	.dark .place-image-label {
@@ -1558,18 +1641,6 @@ const { places } = Astro.props;
 	.dark .place-image-label:focus-visible,
 	.dark .place-image-label.is-active {
 		color: #eceff4;
-	}
-
-	@keyframes image-label-glow {
-		0% {
-			background-position: 0% 50%;
-		}
-		50% {
-			background-position: 100% 50%;
-		}
-		100% {
-			background-position: 0% 50%;
-		}
 	}
 
 	.place-kicker {
@@ -1669,7 +1740,6 @@ const { places } = Astro.props;
 		font-size: 0.88rem;
 		font-weight: 700;
 		line-height: 1.2;
-		transition: border-color 220ms ease, color 220ms ease, background 220ms ease, transform 220ms ease;
 	}
 
 	.place-section li.is-active {
@@ -1677,8 +1747,6 @@ const { places } = Astro.props;
 		background: rgba(236, 239, 244, 0.72);
 		color: #111827;
 		font-weight: 900;
-		transform: translateY(-1px);
-		animation: menu-item-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 	}
 
 	.dark .place-section li {
@@ -1690,16 +1758,6 @@ const { places } = Astro.props;
 		border-color: rgba(236, 239, 244, 0.32);
 		background: rgba(59, 66, 82, 0.72);
 		color: #ffffff;
-	}
-
-	@keyframes menu-item-pulse {
-		0%,
-		100% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0.5;
-		}
 	}
 
 	.place-map-link {

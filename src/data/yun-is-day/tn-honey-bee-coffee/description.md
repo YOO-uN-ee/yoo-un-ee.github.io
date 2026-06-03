@@ -20,5 +20,3 @@ menuItems:
   - Toasted Monkey Latte (Seasonal)
 googleMapsUrl: https://maps.app.goo.gl/7XrMa3ppCnjLVdqd6
 ---
-
-Replace this starter entry with one of your own coffee memories.
