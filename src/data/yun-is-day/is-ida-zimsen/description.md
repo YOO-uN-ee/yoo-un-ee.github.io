@@ -1,11 +1,11 @@
 ---
-name: Emilie and the Cool Kids
+name: Iða Zimsen
 category: coffee
 visitedDate: 2022-07-06
 city: Reykjavík
 country: Iceland
-lat: 64.1235368
-lng: -21.9409295
+lat: 64.1489313
+lng: -21.9440284
 mainImage: 1.jpg
 images:
   - 1.jpg
@@ -14,5 +14,5 @@ imageLabels:
     - Latte
 menuItems:
   - Latte
-googleMapsUrl: https://maps.app.goo.gl/tvkRtyXqsgnwtbj78
+googleMapsUrl: https://maps.app.goo.gl/7vZrZcrNZ21GFNgQ7
 ---

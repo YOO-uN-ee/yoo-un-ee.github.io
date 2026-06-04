@@ -1,7 +1,7 @@
 ---
 name: Emilie and the Cool Kids
 category: coffee
-visitedDate: 2022-06-18
+visitedDate: 2022-06-04
 city: Reykjavík
 country: Iceland
 lat: 64.1235368

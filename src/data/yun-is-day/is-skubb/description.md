@@ -1,11 +1,11 @@
 ---
-name: Sæta Húsið
+name: SKÚBB Ice Cream
 category: icecream
-visitedDate: 2022-07-02
+visitedDate: 2022-06-18
 city: Reykjavík
 country: Iceland
-lat: 64.1461851
-lng: -21.9347535
+lat: 64.1466917
+lng: -21.8775102
 mainImage: 1.jpg
 images:
   - 1.jpg
@@ -14,5 +14,5 @@ imageLabels:
     - Latte
 menuItems:
   - Latte
-googleMapsUrl: https://maps.app.goo.gl/sZmzRJMyiQFWTstY8
+googleMapsUrl: https://maps.app.goo.gl/vPvSFhW8347Durup9
 ---
