@@ -1,11 +1,11 @@
 ---
-name: Emilie and the Cool Kids
+name: Café Babalú
 category: coffee
-visitedDate: 2022-06-16
+visitedDate: 2022-06-24
 city: Reykjavík
 country: Iceland
-lat: 64.1235368
-lng: -21.9409295
+lat: 64.144104
+lng: -21.9327653
 mainImage: 1.jpg
 images:
   - 1.jpg

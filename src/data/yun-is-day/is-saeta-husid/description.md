@@ -1,11 +1,11 @@
 ---
-name: Kaktus Espressobar
+name: Sæta Húsið
 category: coffee
-visitedDate: 2022-06-26
+visitedDate: 2022-07-02
 city: Reykjavík
 country: Iceland
-lat: 64.1439116
-lng: -21.9250078
+lat: 64.1461851
+lng: -21.9347535
 mainImage: 1.jpg
 images:
   - 1.jpg
@@ -14,5 +14,5 @@ imageLabels:
     - Latte
 menuItems:
   - Latte
-googleMapsUrl: https://maps.app.goo.gl/mWHDfxKsA84ZrmKQA
+googleMapsUrl: https://maps.app.goo.gl/sZmzRJMyiQFWTstY8
 ---

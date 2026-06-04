@@ -1,11 +1,11 @@
 ---
-name: Emilie and the Cool Kids
+name: Arna Ís og Kaffi
 category: coffee
-visitedDate: 2022-06-18
+visitedDate: 2022-07-16
 city: Reykjavík
 country: Iceland
-lat: 64.1235368
-lng: -21.9409295
+lat: 64.1506844
+lng: -21.98806
 mainImage: 1.jpg
 images:
   - 1.jpg
@@ -14,5 +14,5 @@ imageLabels:
     - Latte
 menuItems:
   - Latte
-googleMapsUrl: https://maps.app.goo.gl/tvkRtyXqsgnwtbj78
+googleMapsUrl: https://maps.app.goo.gl/d5XDgXAJeQ9WDkMz6
 ---

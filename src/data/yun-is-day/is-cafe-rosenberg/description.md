@@ -1,11 +1,11 @@
 ---
-name: Emilie and the Cool Kids
+name: Café Rosenberg
 category: coffee
-visitedDate: 2022-06-18
+visitedDate: 2022-06-17
 city: Reykjavík
 country: Iceland
-lat: 64.1235368
-lng: -21.9409295
+lat: 64.1488084
+lng: -21.9470497
 mainImage: 1.jpg
 images:
   - 1.jpg
@@ -14,5 +14,5 @@ imageLabels:
     - Latte
 menuItems:
   - Latte
-googleMapsUrl: https://maps.app.goo.gl/tvkRtyXqsgnwtbj78
+googleMapsUrl: https://maps.app.goo.gl/sx4H8JGhiNwtJKxP7
 ---
