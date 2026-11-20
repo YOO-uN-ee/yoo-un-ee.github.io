@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import re
-import shutil
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,7 +12,7 @@ from urllib.parse import quote
 import bibtexparser
 import json5
 import requests
-from scholarly import ProxyGenerator, scholarly
+from scholarly import scholarly
 
 DOI_RE = re.compile(r"(10\.\d{4,9}/[-._;()/:A-Z0-9]+)", re.I)
 SCHOLAR_ID = "RpcilLMAAAAJ"
@@ -375,24 +374,6 @@ def archive_old_publications(
         write_publications(static_path, "staticPubs", static_pubs)
 
 
-def setup_scholarly_tor() -> None:
-    tor_cmd = shutil.which("tor")
-    if not tor_cmd:
-        return
-
-    try:
-        proxy = ProxyGenerator()
-        result = proxy.Tor_Internal(tor_cmd=tor_cmd)
-        if result["proxy_works"]:
-            scholarly.use_proxy(proxy, proxy)
-            print("[scholarly] Using Tor proxy")
-            return
-    except Exception as exc:
-        logging.warning("Tor setup failed: %s", exc)
-
-    print("[scholarly] Continuing without Tor")
-
-
 def fetch_publication_record(pub: dict, allowed_years: set[int]) -> dict | None:
     year = publication_year(pick_year(pub))
     if year is not None and year not in allowed_years:
@@ -434,18 +415,17 @@ def fetch_publication_record(pub: dict, allowed_years: set[int]) -> dict | None:
     }
 
 
-def main() -> None:
-    setup_scholarly_tor()
+def main() -> int:
     scholarly.set_timeout(12)
     scholarly.set_retries(2)
 
-    print("[scholarly] Fetching publication list")
+    print("[scholarly] Fetching publication list directly from Google Scholar")
     try:
         author = scholarly.search_author_id(SCHOLAR_ID)
         author = scholarly.fill(author, sections=["publications"], sortby="year")
     except Exception as exc:
         logging.warning("Google Scholar profile unavailable. Keeping publication files: %s", exc)
-        return
+        return 75
 
     this_year = datetime.now(timezone.utc).year
     allowed_years = {this_year, this_year - 1}
@@ -458,7 +438,9 @@ def main() -> None:
 
     if not fetched_pubs:
         logging.warning("Google Scholar returned no usable recent publications. Keeping publication files.")
-        return
+        return 75
+
+    print(f"[scholarly] Fetched {len(fetched_pubs)} usable recent publications")
 
     dynamic_path = Path(OUT_PATH)
     existing_pubs = read_publications(dynamic_path, "dynamicPubs")
@@ -493,11 +475,12 @@ def main() -> None:
     )
     if pubs == existing_pubs:
         print(f"[scholarly] {len(pubs)} publications already up to date")
-        return
+        return 0
 
     write_publications(dynamic_path, "dynamicPubs", pubs)
     print(f"Wrote {len(pubs)} publications -> {dynamic_path}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
