@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-import re
-import requests
-import os
-import time
 import json
+import logging
+import os
+import re
+import shutil
+import time
 from datetime import datetime, timezone
-from scholarly import scholarly, ProxyGenerator
-from scholarly._proxy_generator import MaxTriesExceededException
-import bibtexparser
-import requests
-from urllib.parse import quote
 from pathlib import Path
+from tempfile import NamedTemporaryFile
+from urllib.parse import quote
 
-GEN_RE = re.compile(r"Generated at:\s*([0-9T:\.\-]+)Z")
+import bibtexparser
+import json5
+import requests
+from scholarly import ProxyGenerator, scholarly
+
 DOI_RE = re.compile(r"(10\.\d{4,9}/[-._;()/:A-Z0-9]+)", re.I)
 SCHOLAR_ID = "RpcilLMAAAAJ"
 OUT_PATH = os.environ.get("OUT_PATH", "src/data/dynamic.ts")
@@ -42,19 +44,21 @@ def crossref_lookup(doi: str, mailto: str = "") -> dict:
         return {}
     url = "https://api.crossref.org/works/" + quote(doi, safe="")
     params = {"mailto": mailto} if mailto else {}
-    r = requests.get(url, params=params, timeout=20)
+    r = requests.get(url, params=params, timeout=15)
     r.raise_for_status()
-    return r.json().get("message", {}) or {}
+    data = r.json()
+    message = data.get("message") if isinstance(data, dict) else None
+    return message if isinstance(message, dict) else {}
 
 def venue_from_crossref(msg: dict) -> str:
     # Crossref: container-title is usually what you want for proceedings/books/journals
     ct = msg.get("container-title") or []
-    if ct and isinstance(ct, list) and ct[0].strip():
+    if isinstance(ct, list) and ct and isinstance(ct[0], str) and ct[0].strip():
         return ct[0].strip()
     # Sometimes "event" exists for conference metadata
     ev = msg.get("event") or {}
-    name = (ev.get("name") or "").strip()
-    return name
+    name = ev.get("name") if isinstance(ev, dict) else None
+    return name.strip() if isinstance(name, str) else ""
 
 def bibtex_to_fields(bibtex_str: str) -> dict:
     """Parse a single-entry BibTeX string into a normalized dict of fields."""
@@ -81,8 +85,8 @@ def get_bibtex_with_fallback(p_full: dict, title: str) -> str:
         s = scholarly.bibtex(p_full)
         if s:
             return s
-    except Exception as e:
-        pass
+    except Exception as exc:
+        logging.info("Direct BibTeX lookup failed for %r: %s", title, exc)
 
     # 2) Fallback: search by title (search results often have the needed IDs)
     try:
@@ -92,12 +96,9 @@ def get_bibtex_with_fallback(p_full: dict, title: str) -> str:
             return ""
         pub2 = scholarly.fill(pub2)
         return scholarly.bibtex(pub2) or ""
-    except Exception:
+    except Exception as exc:
+        logging.warning("BibTeX lookup failed for %r: %s", title, exc)
         return ""
-
-
-def has_good_venue_fields(fields: dict) -> bool:
-    return any((fields.get(k) or "").strip() for k in ("booktitle", "journal", "eventtitle", "series"))
 
 
 def pick_venue_from_bibtex(fields: dict, fallback: str = "") -> str:
@@ -153,17 +154,6 @@ def pick_title_from_bibtex(fields: dict, fallback: str = "") -> str:
 def pick_url_from_bibtex(fields: dict, fallback: str = "") -> str:
     # BibTeX may have url; otherwise use fallback pub_url you already have
     return (fields.get("url") or fallback or "").strip()
-
-def ts_escape(s: str) -> str:
-    """Escape a Python string into a safe TS single-quoted string literal."""
-    if s is None:
-        return ""
-    s = str(s)
-    s = s.replace("\\", "\\\\")
-    s = s.replace("'", "\\'")
-    s = s.replace("\r", "")
-    s = s.replace("\n", "\\n")
-    return s
 
 def pick_year(pub: dict) -> str:
     bib = pub.get("bib", {}) or {}
@@ -304,283 +294,210 @@ def pick_link(pub: dict) -> str:
     bib = pub.get("bib", {}) or {}
     return (pub.get("pub_url") or bib.get("url") or "").strip()
 
-def read_generated_year(ts_path: Path) -> int | None:
-    """Reads the header line: // Generated at: 2026-...Z and returns 2026."""
-    if not ts_path.exists():
-        return None
-    text = ts_path.read_text(encoding="utf-8")
-    m = GEN_RE.search(text)
-    if not m:
-        return None
+def publication_year(value: object) -> int | None:
     try:
-        dt = datetime.fromisoformat(m.group(1))  # no trailing Z in group
-        return dt.year
-    except Exception:
+        return int(str(value).strip())
+    except ValueError:
         return None
 
-def extract_exported_array(ts_text: str) -> list[dict]:
-    """
-    Extracts the first exported array literal from a TS file like:
-      export const dynamicPubs = [...] as const;
-    Assumes the array is valid JSON (double quotes).
-    """
-    # Find first '[' after 'export const'
-    i = ts_text.find("export const")
-    if i < 0:
-        return []
-    j = ts_text.find("[", i)
-    if j < 0:
+
+def read_publications(path: Path, export_name: str) -> list[dict]:
+    if not path.exists():
         return []
 
-    # Bracket match while respecting strings
-    depth = 0
-    in_str = False
-    esc = False
-    end = None
-    for k in range(j, len(ts_text)):
-        ch = ts_text[k]
-        if in_str:
-            if esc:
-                esc = False
-            elif ch == "\\":
-                esc = True
-            elif ch == '"':
-                in_str = False
-            continue
-        else:
-            if ch == '"':
-                in_str = True
-                continue
-            if ch == "[":
-                depth += 1
-            elif ch == "]":
-                depth -= 1
-                if depth == 0:
-                    end = k + 1
-                    break
+    ts_text = path.read_text(encoding="utf-8")
+    match = re.search(
+        rf"^export const {export_name}\s*=\s*(\[.*\])\s*(?:as const)?\s*;?\s*$",
+        ts_text,
+        flags=re.MULTILINE | re.DOTALL,
+    )
+    if not match:
+        raise ValueError(f"Could not read {export_name} in {path}")
 
-    if end is None:
-        return []
+    # Older generated files use single quotes, unquoted keys and paper: undefined.
+    source = re.sub(
+        r"(?m)^([ \t]*paper:[ \t]*)undefined(?=\s*[,}])",
+        r"\g<1>null",
+        match.group(1),
+    )
+    publications = json5.loads(source)
+    if not all(isinstance(pub, dict) for pub in publications):
+        raise ValueError(f"Invalid publication entries in {path}")
+    return publications
 
-    arr_src = ts_text[j:end].strip()
-    return json.loads(arr_src)
 
-def pub_key(p: dict) -> str:
-    # Adjust keys to your schema; these are common patterns:
-    return (
-        str(p.get("doi") or "")
-        or str((p.get("links") or {}).get("paper") or "")
-        or f"{p.get('title','')}__{p.get('year','')}"
+def write_publications(path: Path, export_name: str, publications: list[dict]) -> None:
+    generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    data = json.dumps(publications, ensure_ascii=False, indent=2)
+    content = (
+        "// AUTO-GENERATED FILE. DO NOT EDIT.\n"
+        f"// Generated at: {generated_at}\n\n"
+        f"export const {export_name} = {data};\n"
     )
 
-def dedupe_keep_order(pubs: list[dict]) -> list[dict]:
-    seen = set()
-    out = []
-    for p in pubs:
-        k = pub_key(p)
-        if k in seen:
-            continue
-        seen.add(k)
-        out.append(p)
-    return out
-
-
-def migrate_two_years_ago_dynamic_to_static(dynamic_path: Path, static_path: Path, now_year: int) -> None:
-    """
-    Example:
-      now_year = 2027
-      move entries with year == 2025 from dynamic.ts -> static.ts
-    Only runs if dynamic.ts exists and was generated in a past year.
-    """
-    if not dynamic_path.exists():
-        return
-
-    dyn_gen_year = read_generated_year(dynamic_path)
-    if dyn_gen_year is None:
-        return
-
-    # Only do migration if dynamic file is "old" relative to now
-    if dyn_gen_year >= now_year:
-        return
-
-    target_year = now_year - 2
-
-    dyn_text = dynamic_path.read_text(encoding="utf-8")
-    dyn_items = extract_exported_array(dyn_text)
-
-    to_move = []
-    for p in dyn_items:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with NamedTemporaryFile(
+        mode="w", encoding="utf-8", newline="\n", dir=path.parent, delete=False,
+    ) as temp_file:
+        temp_path = Path(temp_file.name)
         try:
-            y = int(p.get("year"))
-        except Exception:
-            continue
-        if y == target_year:
-            to_move.append(p)
+            temp_file.write(content)
+            temp_file.close()
+            temp_path.replace(path)
+        finally:
+            temp_path.unlink(missing_ok=True)
 
+
+def title_key(pub: dict) -> str:
+    return " ".join(pub["title"].casefold().split())
+
+
+def archive_old_publications(
+    static_path: Path, existing_pubs: list[dict], first_dynamic_year: int,
+) -> None:
+    to_move = []
+    for pub in existing_pubs:
+        year = publication_year(pub.get("year"))
+        if year is not None and year < first_dynamic_year:
+            to_move.append(pub)
     if not to_move:
         return
 
-    # Load existing static (if any)
-    static_items = []
-    if static_path.exists():
-        static_text = static_path.read_text(encoding="utf-8")
-        static_items = extract_exported_array(static_text)
-
-    merged = dedupe_keep_order(static_items + to_move)
-
-    # Write static.ts (keep your header style)
-    generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    static_out = (
-        "// AUTO-GENERATED FILE. DO NOT EDIT.\n"
-        f"// Generated at: {generated_at}\n\n"
-        "export const staticPubs = "
-        + json.dumps(merged, ensure_ascii=False, indent=2)
-        + " as const;\n"
-    )
-    static_path.write_text(static_out, encoding="utf-8")
-
-def setup_scholarly_tor() -> bool:
-    pg = ProxyGenerator()
-
-    # Option A: start Tor from inside the process (needs `tor` binary installed)
-    ok = pg.Tor_Internal(tor_cmd="tor")
-
-    # Option B (alternative): if you run tor as a service and expose 9050:
-    # ok = pg.Tor_External(tor_sock_port=9050)
-
-    if ok:
-        scholarly.use_proxy(pg)
-        print("[scholarly] Using Tor proxy")
-    else:
-        print("[scholarly] Tor proxy setup failed; continuing without proxy")
-    return ok
+    static_pubs = read_publications(static_path, "staticPubs")
+    original_count = len(static_pubs)
+    known_titles = {title_key(pub) for pub in static_pubs}
+    for pub in to_move:
+        key = title_key(pub)
+        if key not in known_titles:
+            static_pubs.append(pub)
+            known_titles.add(key)
+    if len(static_pubs) != original_count:
+        write_publications(static_path, "staticPubs", static_pubs)
 
 
-def main():
+def setup_scholarly_tor() -> None:
+    tor_cmd = shutil.which("tor")
+    if not tor_cmd:
+        return
+
+    try:
+        proxy = ProxyGenerator()
+        result = proxy.Tor_Internal(tor_cmd=tor_cmd)
+        if result["proxy_works"]:
+            scholarly.use_proxy(proxy, proxy)
+            print("[scholarly] Using Tor proxy")
+            return
+    except Exception as exc:
+        logging.warning("Tor setup failed: %s", exc)
+
+    print("[scholarly] Continuing without Tor")
+
+
+def fetch_publication_record(pub: dict, allowed_years: set[int]) -> dict | None:
+    year = publication_year(pick_year(pub))
+    if year is not None and year not in allowed_years:
+        return None
+
+    try:
+        full_pub = scholarly.fill(pub) if pub.get("author_pub_id") else pub
+    except Exception as exc:
+        logging.warning("Scholar details unavailable for %r: %s", pick_title(pub), exc)
+        full_pub = pub
+
+    title = pick_title(full_pub)
+    if not title:
+        return None
+
+    bibtex = get_bibtex_with_fallback(full_pub, title)
+    fields = bibtex_to_fields(bibtex)
+    year = publication_year(pick_year_from_bibtex(fields, fallback=pick_year(full_pub)))
+    if year not in allowed_years:
+        return None
+
+    venue = pick_venue_from_bibtex(fields, fallback=pick_venue(full_pub))
+    link = pick_url_from_bibtex(fields, fallback=pick_link(full_pub))
+    if not venue or "…" in venue:
+        doi = extract_doi(link) or extract_doi(bibtex)
+        if doi:
+            try:
+                message = crossref_lookup(doi, mailto=os.environ.get("CROSSREF_MAILTO", ""))
+                venue = venue_from_crossref(message) or venue
+            except (requests.RequestException, ValueError) as exc:
+                logging.warning("Crossref lookup failed for %r: %s", title, exc)
+
+    return {
+        "title": pick_title_from_bibtex(fields, fallback=title),
+        "authors": pick_authors_from_bibtex(fields, fallback=pick_authors(full_pub)),
+        "venue": venue,
+        "year": str(year),
+        "links": {"paper": link or None},
+    }
+
+
+def main() -> None:
     setup_scholarly_tor()
-    
-    author = scholarly.search_author_id(SCHOLAR_ID)
-    author = scholarly.fill(author)
+    scholarly.set_timeout(12)
+    scholarly.set_retries(2)
+
+    print("[scholarly] Fetching publication list")
+    try:
+        author = scholarly.search_author_id(SCHOLAR_ID)
+        author = scholarly.fill(author, sections=["publications"], sortby="year")
+    except Exception as exc:
+        logging.warning("Google Scholar profile unavailable. Keeping publication files: %s", exc)
+        return
 
     this_year = datetime.now(timezone.utc).year
-    migrate_two_years_ago_dynamic_to_static(
-        dynamic_path=Path("src/data/dynamic.ts"),  # adjust to your paths
-        static_path=Path("src/data/static.ts"),
-        now_year=this_year,
-    )
-
     allowed_years = {this_year, this_year - 1}
+    fetched_pubs = []
+    for pub in author.get("publications") or []:
+        record = fetch_publication_record(pub, allowed_years)
+        if record:
+            fetched_pubs.append(record)
+            time.sleep(1.0)
 
-    pubs = []
-    for p in (author.get("publications") or []):
-        full_url = f"https://scholar.google.com/citations?view_op=view_citation&hl=en&user={SCHOLAR_ID}&citation_for_view={p['author_pub_id']}"
-        # Filling each pub adds requests; keep schedule infrequent.
-        try:
-            p_full = scholarly.fill(p, sortby='year')
-        except Exception:
-            p_full = p
+    if not fetched_pubs:
+        logging.warning("Google Scholar returned no usable recent publications. Keeping publication files.")
+        return
 
-        if int(p_full['bib']['pub_year']) not in allowed_years:
-            continue
-
-        # 1) Try BibTeX (best for full venue + correct booktitle)
-        bibtex_str = ""
-        fields = {}
-        try:
-            bibtex_str = get_bibtex_with_fallback(p_full, title=pick_title(p_full))
-            fields = bibtex_to_fields(bibtex_str)
-
-            # inside loop, right after you compute `fields`:
-            if not fields:
-                print(f"[bibtex] EMPTY fields for: {title}")
-            elif not has_good_venue_fields(fields):
-                print(f"[bibtex] NO venue keys for: {title} | keys={sorted(fields.keys())[:15]} ...")
-        except Exception:
-            fields = {}
-
-        # 2) Fall back to your current pickers if BibTeX fails
-        title = pick_title(p_full)
-        if not title:
-            continue
-
-        fallback_authors = pick_authors(p_full)
-        fallback_year = pick_year(p_full)
-
-        candidate_year = pick_year_from_bibtex(fields, fallback=fallback_year)
-
-        try:
-            y_int = int(candidate_year)
-        except Exception:
-            # If year is missing/unparseable, skip (or keep, if you prefer)
-            continue
-
-        if y_int not in allowed_years:
-            continue
-
-        fallback_venue = pick_venue(p_full)
-        fallback_link = pick_link(p_full)
-
-        record = {
-            "title": pick_title_from_bibtex(fields, fallback=title),
-            "authors": pick_authors_from_bibtex(fields, fallback=fallback_authors),
-            "venue": pick_venue_from_bibtex(fields, fallback=fallback_venue),
-            "year": candidate_year,
+    dynamic_path = Path(OUT_PATH)
+    existing_pubs = read_publications(dynamic_path, "dynamicPubs")
+    previous_by_title = {title_key(pub): pub for pub in existing_pubs}
+    recent_pubs = {
+        key: pub for key, pub in previous_by_title.items()
+        if publication_year(pub.get("year")) in allowed_years
+    }
+    for record in fetched_pubs:
+        key = title_key(record)
+        previous = previous_by_title.get(key, {})
+        previous_links = previous.get("links") or {}
+        venue = record["venue"]
+        if not venue or "…" in venue:
+            venue = previous.get("venue") or venue
+        recent_pubs[key] = {
+            **previous,
+            **record,
+            "authors": record["authors"] or previous.get("authors", ""),
+            "venue": venue,
             "links": {
-                "paper": pick_url_from_bibtex(fields, fallback=fallback_link) or None,
-            }
+                **previous_links,
+                "paper": record["links"]["paper"] or previous_links.get("paper"),
+            },
         }
 
-        if (not record["venue"]) or ("…" in record["venue"]):
-            doi = extract_doi(record["links"]["paper"] or "") or extract_doi(bibtex_str)
-            if doi:
-                msg = crossref_lookup(doi, mailto=os.environ.get("CROSSREF_MAILTO", ""))
-                v = venue_from_crossref(msg)
-                if v:
-                    record["venue"] = v
+    pubs = sorted(recent_pubs.values(), key=lambda pub: int(pub["year"]), reverse=True)
+    archive_old_publications(
+        dynamic_path.with_name("static.ts"),
+        [pub for pub in existing_pubs if title_key(pub) not in recent_pubs],
+        this_year - 1,
+    )
+    if pubs == existing_pubs:
+        print(f"[scholarly] {len(pubs)} publications already up to date")
+        return
 
-        pubs.append(record)
-        time.sleep(1.0)
+    write_publications(dynamic_path, "dynamicPubs", pubs)
+    print(f"Wrote {len(pubs)} publications -> {dynamic_path}")
 
-    # Sort newest year first (string-safe)
-    def year_key(r):
-        try:
-            return int(r["year"])
-        except Exception:
-            return -1
-    pubs.sort(key=year_key, reverse=True)
-
-    generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    lines = []
-    lines.append("// AUTO-GENERATED FILE. DO NOT EDIT.")
-    lines.append(f"// Generated at: {generated_at}")
-    lines.append("")
-    lines.append("export const dynamicPubs = [")
-    for r in pubs:
-        title = ts_escape(r["title"])
-        authors = ts_escape(r["authors"])
-        journal = ts_escape(r["venue"])
-        year = ts_escape(r["year"])
-        link = r["links"]["paper"]
-        link_ts = f"'{ts_escape(link)}'" if link else "undefined"
-
-        # Keep the same keys your site expects: title/authors/journal/time/link/github/slides/abstract
-        lines.append("  {")
-        lines.append(f"    title: '{title}',")
-        lines.append(f"    authors: '{authors}',")
-        lines.append(f"    venue: '{journal}',")
-        lines.append(f"    year: '{year}',")
-        lines.append("    links: {")
-        lines.append(f"        paper: {link_ts}")
-        lines.append("    }")
-        lines.append("  },")
-    lines.append("];")
-    lines.append("")
-
-    os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
-    with open(OUT_PATH, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
-
-    print(f"Wrote {len(pubs)} publications -> {OUT_PATH}")
 
 if __name__ == "__main__":
     main()
