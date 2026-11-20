@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
   schedule:
     # Runs at 03:30 UTC daily (cron is UTC)
-    - cron: "* 10 * * *"
+    - cron: "0 0 * * 0"
 
 # Allow this job to clone the repo and create a page deployment
 permissions:
@@ -46,9 +46,9 @@ jobs:
           pip install scholarly
           pip install bibtexparser
 
-      # - name: Update publications file
-      #   run: |
-      #     python src/scripts/update_publications_ts.py
+      - name: Update publications file
+        run: |
+          python src/scripts/update_publications_ts.py
 
       - name: Commit & push if changed
         run: |
