@@ -3,6 +3,24 @@
 
 export const staticPubs = [
 	{
+		title: "ENC-QA: A Diagnostic Benchmark for Vision-Language Models on Electronic Navigational Charts",
+		authors: 'Jiyoon Pyo, Jacob Arndt, Yao-Yi Chiang, Dalton Lunga',
+		venue: 'Preprint, Under Review',
+		year: 2027,
+		links: {
+			// webpage: 'https://iclr-blogposts.github.io/2026/blog/2026/spatial-awareness/',
+		}
+	},
+	{
+		title: "Spatial Query Execution as Verifiable Rewards for Multi-step Spatial Reasoning",
+		authors: 'Jiyoon Pyo, Dongwon Jung, Zekun Li, Nayeon Kim, Muhao Chen, Yao-Yi Chiang',
+		venue: 'Preprint, Under Review',
+		year: 2027,
+		links: {
+			// webpage: 'https://iclr-blogposts.github.io/2026/blog/2026/spatial-awareness/',
+		}
+	},
+	{
 		title: "Where's the Chicken? Unpacking Spatial Awareness in Vision-Language Models",
 		authors: 'Jiyoon Pyo, Yao-Yi Chiang',
 		venue: 'The Blogpost Track at ICLR 2026',

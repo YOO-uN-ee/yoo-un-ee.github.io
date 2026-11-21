@@ -39,16 +39,27 @@ jobs:
           python -m pip install "scholarly==1.7.11" "bibtexparser==1.4.4" "httpx==0.27.2" "json5==0.12.1"
 
       - name: Update publications file
+        env:
+          OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}
         run: |
+          source="Google Scholar"
           status=0
-          timeout --kill-after=10s 5m python -u src/scripts/update_publications_ts.py || status=$?
+          timeout --kill-after=10s 2m python -u src/scripts/update_publications_ts.py || status=$?
+          case "$status" in
+            75|124|137)
+              echo "::notice::Google Scholar refresh unavailable. Trying OpenAlex."
+              source="OpenAlex"
+              status=0
+              timeout --kill-after=10s 1m python -u src/scripts/update_publications_ts.py --source openalex || status=$?
+              ;;
+          esac
           case "$status" in
             0)
-              echo "Publication refresh completed." >> "$GITHUB_STEP_SUMMARY"
+              echo "Publication refresh completed using $source." >> "$GITHUB_STEP_SUMMARY"
               ;;
             75|124|137)
-              echo "::warning::Publication refresh skipped. Building with saved publication data."
-              echo "Publication refresh skipped. The site build used saved publication data." >> "$GITHUB_STEP_SUMMARY"
+              echo "::warning::Google Scholar and OpenAlex refreshes unavailable. Building with saved publication data."
+              echo "Publication refresh skipped. The site will build with saved publication data." >> "$GITHUB_STEP_SUMMARY"
               ;;
             *) exit "$status" ;;
           esac
@@ -65,7 +76,7 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore: update publications from Google Scholar"
+          git commit -m "chore: refresh publications"
           git push
         # with:
               # path: . # The root location of your Astro project inside the repository. (optional)

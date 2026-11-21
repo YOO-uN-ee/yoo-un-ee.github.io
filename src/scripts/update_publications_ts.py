@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import json
 import logging
 import os
@@ -16,7 +17,9 @@ from scholarly import scholarly
 
 DOI_RE = re.compile(r"(10\.\d{4,9}/[-._;()/:A-Z0-9]+)", re.I)
 SCHOLAR_ID = "RpcilLMAAAAJ"
+AUTHOR_ORCID = "0009-0000-8746-4411"
 OUT_PATH = os.environ.get("OUT_PATH", "src/data/dynamic.ts")
+REFRESH_UNAVAILABLE = 75
 
 META_NAMES = [
     "citation_conference_title",
@@ -415,7 +418,7 @@ def fetch_publication_record(pub: dict, allowed_years: set[int]) -> dict | None:
     }
 
 
-def main() -> int:
+def fetch_scholar_publications(allowed_years: set[int]) -> list[dict]:
     scholarly.set_timeout(12)
     scholarly.set_retries(2)
 
@@ -424,33 +427,108 @@ def main() -> int:
         author = scholarly.search_author_id(SCHOLAR_ID)
         author = scholarly.fill(author, sections=["publications"], sortby="year")
     except Exception as exc:
-        logging.warning("Google Scholar profile unavailable. Keeping publication files: %s", exc)
-        return 75
+        logging.warning("Google Scholar profile unavailable: %s", exc)
+        return []
 
-    this_year = datetime.now(timezone.utc).year
-    allowed_years = {this_year, this_year - 1}
     fetched_pubs = []
     for pub in author.get("publications") or []:
         record = fetch_publication_record(pub, allowed_years)
         if record:
             fetched_pubs.append(record)
             time.sleep(1.0)
+    return fetched_pubs
 
+
+def fetch_openalex_publications(allowed_years: set[int]) -> list[dict]:
+    print("[openalex] Fetching recent publications by ORCID")
+    api_key = os.environ.get("OPENALEX_API_KEY")
+    headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+    params = {
+        "filter": f"author.orcid:{AUTHOR_ORCID},from_publication_date:{min(allowed_years)}-01-01",
+        "select": "id,title,publication_year,authorships,primary_location,doi",
+        "sort": "publication_date:desc",
+        "per_page": 100,
+        "page": 1,
+    }
+    records = []
+    while True:
+        try:
+            response = requests.get("https://api.openalex.org/works", params=params, headers=headers, timeout=15)
+            response.raise_for_status()
+            works = response.json()["results"]
+        except (requests.RequestException, KeyError, TypeError, ValueError) as exc:
+            logging.warning("OpenAlex works request failed: %s", exc)
+            return []
+        if not isinstance(works, list):
+            logging.warning("OpenAlex returned an invalid publication list")
+            return []
+
+        for work in works:
+            title = (work.get("title") or "").strip()
+            year = publication_year(work.get("publication_year"))
+            if not title or year not in allowed_years:
+                continue
+            authors = [
+                (authorship.get("author") or {}).get("display_name")
+                for authorship in work.get("authorships") or []
+            ]
+            location = work.get("primary_location") or {}
+            venue = (location.get("source") or {}).get("display_name")
+            link = work.get("doi") or location.get("landing_page_url") or work.get("id") or ""
+            records.append({
+                "title": title,
+                "authors": ", ".join(filter(None, authors)),
+                "venue": venue or "",
+                "year": str(year),
+                "links": {"paper": link if link.startswith(("https://", "http://")) else None},
+            })
+        if len(works) < params["per_page"]:
+            return records
+        params["page"] += 1
+
+
+def paper_doi(publication: dict) -> str:
+    return extract_doi((publication.get("links") or {}).get("paper") or "").casefold()
+
+
+def main(source: str = "scholar") -> int:
+    this_year = datetime.now(timezone.utc).year
+    allowed_years = {this_year, this_year - 1}
+    if source == "openalex":
+        fetched_pubs = fetch_openalex_publications(allowed_years)
+        source_name = "OpenAlex"
+    else:
+        fetched_pubs = fetch_scholar_publications(allowed_years)
+        source_name = "Google Scholar"
     if not fetched_pubs:
-        logging.warning("Google Scholar returned no usable recent publications. Keeping publication files.")
-        return 75
+        logging.warning("%s returned no usable recent publications. Keeping publication files.", source_name)
+        return REFRESH_UNAVAILABLE
 
-    print(f"[scholarly] Fetched {len(fetched_pubs)} usable recent publications")
+    print(f"[{source_name}] Fetched {len(fetched_pubs)} usable recent publications")
 
     dynamic_path = Path(OUT_PATH)
+    static_path = dynamic_path.with_name("static.ts")
     existing_pubs = read_publications(dynamic_path, "dynamicPubs")
     previous_by_title = {title_key(pub): pub for pub in existing_pubs}
     recent_pubs = {
         key: pub for key, pub in previous_by_title.items()
         if publication_year(pub.get("year")) in allowed_years
     }
+    if source == "openalex":
+        saved_pubs = existing_pubs + read_publications(static_path, "staticPubs")
+        saved_titles = {title_key(pub) for pub in saved_pubs}
+        saved_dois = {paper_doi(pub) for pub in saved_pubs} - {""}
+
     for record in fetched_pubs:
         key = title_key(record)
+        if source == "openalex":
+            doi = paper_doi(record)
+            if key in saved_titles or doi in saved_dois:
+                continue
+            saved_titles.add(key)
+            if doi:
+                saved_dois.add(doi)
+
         previous = previous_by_title.get(key, {})
         previous_links = previous.get("links") or {}
         venue = record["venue"]
@@ -467,20 +545,22 @@ def main() -> int:
             },
         }
 
+    if recent_pubs == previous_by_title and len(recent_pubs) == len(existing_pubs):
+        print(f"[{source_name}] No changes to saved publications")
+        return 0
+
     pubs = sorted(recent_pubs.values(), key=lambda pub: int(pub["year"]), reverse=True)
     archive_old_publications(
-        dynamic_path.with_name("static.ts"),
+        static_path,
         [pub for pub in existing_pubs if title_key(pub) not in recent_pubs],
         this_year - 1,
     )
-    if pubs == existing_pubs:
-        print(f"[scholarly] {len(pubs)} publications already up to date")
-        return 0
-
     write_publications(dynamic_path, "dynamicPubs", pubs)
     print(f"Wrote {len(pubs)} publications -> {dynamic_path}")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    parser = argparse.ArgumentParser(description="Refresh the site's publication data.")
+    parser.add_argument("--source", choices=("scholar", "openalex"), default="scholar")
+    raise SystemExit(main(parser.parse_args().source))
