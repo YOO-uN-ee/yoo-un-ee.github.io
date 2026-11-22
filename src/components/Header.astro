@@ -1,5 +1,5 @@
 ---
-import LanguageMenu from './LanguageMenu.astro';
+// import LanguageMenu from './LanguageMenu.astro';
 
 const currentPage = Astro.url.pathname;
 const isActive = (path: string) => currentPage === path || currentPage === `${path}/`;
@@ -44,7 +44,7 @@ const mobileLinkClass = (path: string) =>
 		</div>
 
 		<div class="flex items-center gap-2">
-			<LanguageMenu />
+			{/* <LanguageMenu /> */}
 
 			<button onclick="window.toggleTheme()" class="p-1 sm:p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer flex-shrink-0" aria-label="Toggle theme" data-ko-aria-label="테마 전환" title="Toggle theme" data-ko-title="테마 전환">
 				<svg class="w-4 h-4 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
