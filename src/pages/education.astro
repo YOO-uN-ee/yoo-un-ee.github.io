@@ -5,43 +5,28 @@ import Footer from '../components/Footer.astro';
 import { educationExperience } from '../data/education';
 
 const translations = {
-    subtitle: { en: 'Milestones', es: 'Mi Trayectoria' },
-    title: { en: 'Education', es: 'Experiencia Laboral' },
-    description: { en: 'Overview of my academic background and progress.', es: 'Una línea de tiempo de mi trayectoria profesional y logros.' }
+    subtitle: { en: 'Milestones', ko: '학업 이력' },
+    title: { en: 'Education', ko: '학력' },
+    description: { en: 'Overview of my academic background and progress.', ko: '지금까지의 학업 과정과 교육 활동을 소개합니다.' }
 };
 
 ---
 
-<Layout title={`Education | Jiyoon Pyo`}>
+<Layout title="Education | Jiyoon Pyo" titleKo="학력 | 표지윤">
 	<Header />
 	
 	<main class="min-h-screen px-4 sm:px-6 md:px-6">
 		<section class="max-w-3xl mx-auto min-h-[calc(100vh-5rem)] pt-24 sm:pt-32 md:pt-48 pb-16 sm:pb-24 fade-in px-2 sm:px-0">
 			<div class="max-w-2xl mb-12 sm:mb-16">
-				<p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 sm:mb-4 tracking-wider uppercase" data-en={translations.subtitle.en} data-es={translations.subtitle.es}>{translations.subtitle.en}</p>
-				<h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white" data-en={translations.title.en} data-es={translations.title.es}>
+				<p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 sm:mb-4 tracking-wider uppercase" data-ko={translations.subtitle.ko}>{translations.subtitle.en}</p>
+				<h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white" data-ko={translations.title.ko}>
 					{translations.title.en}
 				</h1>
-				<p class="mt-3 sm:mt-4 text-sm sm:text-lg text-gray-600 dark:text-gray-400" data-en={translations.description.en} data-es={translations.description.es}>
+				<p class="mt-3 sm:mt-4 text-sm sm:text-lg text-gray-600 dark:text-gray-400" data-ko={translations.description.ko}>
 					{translations.description.en}
 				</p>
 			</div>
 
-			<!-- <div class="space-y-8 sm:space-y-12 parallax-section">
-				{
-					educationExperience.map((education, index) => (
-						<div class="relative pl-6 sm:pl-8 border-l-2 border-gray-200 dark:border-gray-700 bg-transparent group cursor-pointer hover:scale-105 transition-all">
-							<div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-gray-400 dark:bg-gray-500 group-hover:scale-125 transition-transform"></div>
-							<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2 sm:gap-0">
-								<h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white" data-en={education.title} data-es={education.titleES}>{education.title}</h3>
-								<span class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium" data-en={education.year} data-es={education.yearES}>{education.year}</span>
-							</div>
-							<p class="text-sm sm:text-lg text-gray-600 dark:text-gray-400 font-medium mb-2 sm:mb-3">{education.company}</p>
-							<p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed" data-en={education.description} data-es={education.descriptionES}>{education.description}</p>
-						</div>
-					))
-				}
-			</div> -->
 
 			<div class="space-y-8 sm:space-y-12 parallax-section">
 				{educationExperience.map((edu) => (
@@ -53,22 +38,22 @@ const translations = {
 					  {/* Header row: Institution left, Year+Location right */}
 					  <div class="flex items-start justify-between gap-4 mb-2">
 						<div>
-						  <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+						  <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white" data-ko={edu.institutionKo}>
 							{edu.institution}
 						  </h3>
 						</div>
 			  
 						<div class="text-right shrink-0">
-						  <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
+						  <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium" data-ko={edu.yearKo}>
 							{edu.year}
 						  </div>
-						  <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+						  <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1" data-ko={edu.locationKo}>
 							{edu.location}
 						  </div>
 						</div>
 					  </div>
 			  
-					  <p class="text-sm sm:text-lg text-gray-600 dark:text-gray-300 font-medium mb-2">
+					  <p class="text-sm sm:text-lg text-gray-600 dark:text-gray-300 font-medium mb-2" data-ko={edu.degreeKo}>
 						{edu.degree}
 					  </p>
 			  
@@ -76,18 +61,19 @@ const translations = {
 						<ul class="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed space-y-1 mb-3">
 						  {edu.highlights.map((h) => (
 							<li>
-							  <span class="font-medium text-gray-700 dark:text-gray-300">{h.label}:</span>{' '}
+							  <span class="font-medium text-gray-700 dark:text-gray-300" data-ko={h.labelKo + ':'}>{h.label}:</span>{' '}
 							  {h.href ? (
 								<a
 								  href={h.href}
 								  target="_blank"
 								  rel="noreferrer"
 								  class="underline underline-offset-4 hover:text-gray-900 dark:hover:text-white transition-colors"
+								  data-ko={h.textKo}
 								>
 								  {h.text}
 								</a>
 							  ) : (
-								<span>{h.text}</span>
+								<span data-ko={h.textKo}>{h.text}</span>
 							  )}
 							</li>
 						  ))}
@@ -103,7 +89,7 @@ const translations = {
 							  {a.label === 'Teaching Assistant' ? (
 								<details class="edu-details">
 								  <summary class="flex items-center justify-between gap-2 text-sm font-semibold text-gray-800 dark:text-gray-200 cursor-pointer select-none">
-									<span>{a.label}</span>
+									<span data-ko={a.labelKo}>{a.label}</span>
 			  
 									{/* triangle icon */}
 									<svg class="edu-chevron" width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
@@ -115,9 +101,9 @@ const translations = {
 									<ul class="mt-2 space-y-1">
 									  {a.items.map((it) => (
 										<li class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
-										  <span>{it.text}</span>
+										  <span data-ko={it.textKo}>{it.text}</span>
 										  {it.meta ? (
-											<span class="text-xs text-gray-500 dark:text-gray-500 font-medium">
+											<span class="text-xs text-gray-500 dark:text-gray-500 font-medium" data-ko={it.metaKo}>
 											  {it.meta}
 											</span>
 										  ) : null}
@@ -128,7 +114,7 @@ const translations = {
 								</details>
 							  ) : (
 								<>
-								  <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+								  <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2" data-ko={a.labelKo}>
 									{a.label}
 								  </p>
 			  
@@ -136,9 +122,9 @@ const translations = {
 									<ul class="space-y-1">
 									  {a.items.map((it) => (
 										<li class="text-sm sm:text-base text-gray-600 dark:text-gray-400 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5">
-										  <span>{it.text}</span>
+										  <span data-ko={it.textKo}>{it.text}</span>
 										  {it.meta ? (
-											<span class="text-xs sm:text-sm text-gray-500 dark:text-gray-500 font-medium">
+											<span class="text-xs sm:text-sm text-gray-500 dark:text-gray-500 font-medium" data-ko={it.metaKo}>
 											  {it.meta}
 											</span>
 										  ) : null}

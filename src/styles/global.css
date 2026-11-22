@@ -221,49 +221,10 @@ body {
 	animation-play-state: paused;
 }
 
-@keyframes fadeInOverlay {
-	0% {
-		opacity: 0;
-	}
-	100% {
-		opacity: 1;
-	}
-}
-
-@keyframes fadeOutOverlay {
-	0% {
-		opacity: 1;
-	}
-	100% {
-		opacity: 0;
-	}
-}
-
-.lang-change-overlay {
-	position: fixed;
-	inset: 0;
-	background: rgba(0, 0, 0, 0.6);
-	backdrop-filter: blur(8px);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	z-index: 999;
-	animation: fadeInOverlay 0.3s ease;
-}
-
-.lang-change-overlay.hidden {
-	animation: fadeOutOverlay 0.3s ease forwards;
-}
-
-.lang-change-modal {
-	text-align: center;
-	animation: fadeInOverlay 0.3s ease;
-}
-
-.lang-change-modal h2 {
-	font-size: 2rem;
-	font-weight: bold;
-	color: var(--color-white);
+/* Rich text can have different word and link order in each language. */
+html[lang="ko"] [data-language-version="en"],
+html:not([lang="ko"]) [data-language-version="ko"] {
+	display: none;
 }
 
 /* Remove default disclosure triangle */

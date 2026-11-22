@@ -7,11 +7,9 @@ import { staticPubs } from '../data/static';
 import { dynamicPubs } from '../data/dynamic';
 
 const translations = {
-	subtitle: { en: 'Full Publication List', es: 'Trabajos Seleccionados' },
-	title: { en: 'Publications', es: 'Proyectos' },
-	description: { en: 'A complete list of my publications, preprints, and research outputs.', es: 'Una colección de proyectos que muestran mis habilidades en desarrollo full-stack, desde la concepción hasta el despliegue.' },
-	comingSoon: { en: 'Publications are coming', es: 'Los proyectos están por venir' },
-	noPubs: { en: 'No publications yet.', es: 'Aún no hay publicaciones.' }
+	subtitle: { en: 'Full Publication List', ko: '전체 논문 목록' },
+	title: { en: 'Publications', ko: '연구 논문' },
+	description: { en: 'A complete list of my publications, preprints, and research outputs.', ko: '지금까지 발표한 논문과 프리프린트, 연구 성과를 모았습니다.' },
 };
 
 const MY_NAME_VARIANTS = [
@@ -72,8 +70,8 @@ const yearOrder = Object.keys(pubsByYear).sort((a, b) => {
 function actionButtons(links) {
 	if (!links) return [];
 	const btns = [];
-	if (links.paper) btns.push({ label: 'Paper', href: links.paper });
-	if (links.webpage) btns.push({ label: 'Webpage', href: links.webpage });
+	if (links.paper) btns.push({ label: 'Paper', ko: '논문', href: links.paper });
+	if (links.webpage) btns.push({ label: 'Webpage', ko: '웹사이트', href: links.webpage });
 	if (links.github) btns.push({ label: 'GitHub', href: links.github });
 	if (links.huggingface) btns.push({ label: 'Hugging Face', href: links.huggingface });
 	if (links.bibtex) btns.push({ label: 'BibTeX', href: links.bibtex });
@@ -81,28 +79,21 @@ function actionButtons(links) {
 }
 ---
 
-<Layout title={`Publications | Jiyoon Pyo`}>
+<Layout title="Publications | Jiyoon Pyo" titleKo="연구 논문 | 표지윤">
 	<Header />
 	
 	<main class="min-h-screen px-4 sm:px-6 md:px-6">
 		<section class="max-w-3xl mx-auto min-h-[calc(100vh-5rem)] pt-24 sm:pt-32 md:pt-48 pb-16 sm:pb-24 fade-in px-2 sm:px-0">
 			<div class="max-w-2xl mb-12 sm:mb-16">
-				<p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 sm:mb-4 tracking-wider uppercase" data-en={translations.subtitle.en} data-es={translations.subtitle.es}>{translations.subtitle.en}</p>
-				<h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white" data-en={translations.title.en} data-es={translations.title.es}>
+				<p class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 sm:mb-4 tracking-wider uppercase" data-ko={translations.subtitle.ko}>{translations.subtitle.en}</p>
+				<h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white" data-ko={translations.title.ko}>
 					{translations.title.en}
 				</h1>
-				<p class="mt-3 sm:mt-4 text-sm sm:text-lg text-gray-600 dark:text-gray-400" data-en={translations.description.en} data-es={translations.description.es}>
+				<p class="mt-3 sm:mt-4 text-sm sm:text-lg text-gray-600 dark:text-gray-400" data-ko={translations.description.ko}>
 					{translations.description.en}
 				</p>
 			</div>
 
-			<!-- <div class="flex items-center justify-center min-h-[400px] parallax-section">
-				<div class="text-center">
-					<h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white animate-pulse" data-en={translations.comingSoon.en} data-es={translations.comingSoon.es}>
-						{translations.comingSoon.en}
-					</h2>
-				</div>
-			</div> -->
 
 			{yearOrder.map((year) => (
 				<section class="mb-14 sm:mb-16">
@@ -117,10 +108,10 @@ function actionButtons(links) {
 
 							return (
 								<article class="pb-10 border-b border-gray-200 dark:border-gray-800">
-									<h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white leading-snug">
+									<h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white leading-snug" lang="en" translate="no">
 										{p.title}
 									</h3>
-									<p class="mt-2 text-sm sm:text-base text-gray-700 dark:text-gray-300">
+									<p class="mt-2 text-sm sm:text-base text-gray-700 dark:text-gray-300" translate="no">
 										{authors.map((a, idx) => (
 											<>
 												{idx > 0 ? ', ' : ''}
@@ -129,14 +120,14 @@ function actionButtons(links) {
 										))}
 									</p>
 									{p.venue ? (
-										<p class="mt-1 text-sm italic text-gray-600 dark:text-gray-400">{p.venue}</p>
+										<p class="mt-1 text-sm italic text-gray-600 dark:text-gray-400" data-ko={p.venue === 'Preprint, Under Review' ? '프리프린트 · 심사 중' : undefined} translate={p.venue === 'Preprint, Under Review' ? undefined : 'no'}>{p.venue}</p>
 									) : null}
 
 									{btns.length ? (
 									<div class="mt-3 flex flex-wrap gap-2">
 										{btns.map((b) => (
 										<a
-											href={b.href}
+											href={b.href} data-ko={b.ko} translate={b.ko ? undefined : 'no'}
 											target="_blank"
 											rel="noreferrer"
 											class="animated-border cursor-pointer px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white font-medium rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -153,6 +144,7 @@ function actionButtons(links) {
 					</div>
 				</section>
 			))}
+		</section>
 	</main>
 
 	<Footer />

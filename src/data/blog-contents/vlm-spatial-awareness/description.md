@@ -1,8 +1,11 @@
 ---
 title: "Where's the Chicken? Unpacking Spatial Awareness in Vision-Language Models"
+titleKo: "병아리는 어디에 있을까? 시각 언어 모델의 공간 인식 들여다보기"
 summary: "Modern vision-language models (VLMs) have achieved impressive success in recognizing and describing visual content, yet they continue to struggle with understanding spatial relationships. The limitation persists even with massive data and model scaling, suggesting that the root of the problem lies in the architecture and training objective rather than data alone. This post examines the underlying causes and discusses why recent proposed fixes, while promising, remain insufficient to achieve robust spatial reasoning."
+summaryKo: "오늘날의 시각 언어 모델(VLM)은 이미지 속 대상을 알아보고 묘사하는 데 능숙하지만, 대상 사이의 공간 관계를 이해하는 데는 여전히 어려움을 겪습니다. 데이터와 모델의 규모를 크게 늘려도 이 한계가 남는다는 점은 모델 구조와 학습 목표를 살펴봐야 한다는 뜻입니다. 이 글에서는 그 원인을 짚어 보고, 최근 제안된 방법들로도 안정적인 공간 추론이 어려운 이유를 살펴봅니다."
 date: "April 27, 2026"
 tags: ["Vision Language Models", "Spatial Reasoning"]
+tagsKo: ["시각 언어 모델", "공간 추론"]
 bibtex: |
   @inproceedings{pyo2026wheres,
     title={Where's the Chicken? Unpacking Spatial Awareness in Vision-Language Models},
