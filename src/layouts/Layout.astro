@@ -17,39 +17,57 @@ import '../styles/global.css';
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/png" href="/jiyoon.png" />
 		<meta name="generator" content={Astro.generator} />
+		<script is:inline>
+			(() => {
+				const system = window.matchMedia('(prefers-color-scheme: dark)');
+				const root = document.documentElement;
+
+				function readOverride() {
+					try {
+						const saved = localStorage.getItem('theme');
+						if (saved === 'dark' || saved === 'light') return saved;
+					} catch { /* Storage may be disabled. */ }
+					return document.cookie.match(/(?:^|; )theme=(dark|light)(?:;|$)/)?.[1] ?? null;
+				}
+
+				let override = readOverride();
+				function applyTheme() {
+					const dark = override ? override === 'dark' : system.matches;
+					root.classList.toggle('dark', dark);
+					root.dataset.theme = dark ? 'nord-dark' : 'nord';
+				}
+
+				applyTheme();
+				system.addEventListener('change', applyTheme);
+
+				function restoreTheme() {
+					override = readOverride();
+					applyTheme();
+				}
+				window.addEventListener('pageshow', event => {
+					if (event.persisted) restoreTheme();
+				});
+				window.addEventListener('storage', event => {
+					if (event.key === 'theme' || event.key === null) restoreTheme();
+				});
+
+				window.toggleTheme = () => {
+					const dark = !root.classList.contains('dark');
+					const theme = dark ? 'dark' : 'light';
+					// Choosing the system's current appearance resumes automatic updates.
+					override = dark === system.matches ? null : theme;
+					applyTheme();
+					try {
+						if (override) localStorage.setItem('theme', override);
+						else localStorage.removeItem('theme');
+					} catch { /* The current page can still use the selected theme. */ }
+					document.cookie = `theme=${override ?? ''}; path=/; max-age=${override ? 31536000 : 0}; SameSite=Lax`;
+				};
+			})();
+		</script>
 		<title data-ko={titleKo}>{title}</title>
 	</head>
 	<body class="bg-white dark:bg-gray-950 transition-colors duration-300">
 		<slot />
-		<script>
-			declare global {
-				interface Window {
-					toggleTheme: () => void;
-				}
-			}
-
-			// Initialize theme from browser storage so static prerendering never needs request headers.
-			const cookieTheme = document.cookie.match(/(?:^|; )theme=(dark|light)(?:;|$)/)?.[1];
-			const savedTheme = localStorage.getItem('theme') || cookieTheme;
-			if (savedTheme) {
-				document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-				document.documentElement.setAttribute('data-theme', savedTheme === 'dark' ? 'nord-dark' : 'nord');
-			} else {
-				document.documentElement.setAttribute(
-					'data-theme',
-					document.documentElement.classList.contains('dark') ? 'nord-dark' : 'nord',
-				);
-			}
-
-			window.toggleTheme = () => {
-				const isDark = document.documentElement.classList.toggle('dark');
-				const theme = isDark ? 'dark' : 'light';
-				document.documentElement.setAttribute('data-theme', isDark ? 'nord-dark' : 'nord');
-				localStorage.setItem('theme', theme);
-				// Also set a cookie so the server knows the theme on next request
-				document.cookie = `theme=${theme}; path=/; max-age=31536000`;
-			};
-
-		</script>
 	</body>
 </html>

@@ -12,9 +12,9 @@ type BrowserTranslator = {
 function savedMode(): Mode {
 	try {
 		const value = localStorage.getItem('lang');
-		if (value === 'en' || value === 'ko') return value;
+		if (value === 'ko' || value === 'auto') return value;
 	} catch { /* The selector also works when browser storage is disabled. */ }
-	return 'auto';
+	return 'en';
 }
 
 function regionalLanguage(): string {
