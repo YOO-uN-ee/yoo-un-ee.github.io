@@ -6,7 +6,7 @@ export const staticPubs = [
 		title: "ENC-QA: A Diagnostic Benchmark for Vision-Language Models on Electronic Navigational Charts",
 		authors: 'Jiyoon Pyo, Jacob Arndt, Yao-Yi Chiang, Dalton Lunga',
 		venue: 'Preprint, Under Review',
-		year: 2027,
+		year: 2026,
 		links: {
 			// webpage: 'https://iclr-blogposts.github.io/2026/blog/2026/spatial-awareness/',
 		}
@@ -15,7 +15,7 @@ export const staticPubs = [
 		title: "Spatial Query Execution as Verifiable Rewards for Multi-step Spatial Reasoning",
 		authors: 'Jiyoon Pyo, Dongwon Jung, Zekun Li, Nayeon Kim, Muhao Chen, Yao-Yi Chiang',
 		venue: 'Preprint, Under Review',
-		year: 2027,
+		year: 2026,
 		links: {
 			// webpage: 'https://iclr-blogposts.github.io/2026/blog/2026/spatial-awareness/',
 		}
