@@ -8,7 +8,7 @@ export const staticPubs = [
 		venue: 'Preprint, Under Review',
 		year: 2026,
 		links: {
-			// webpage: 'https://iclr-blogposts.github.io/2026/blog/2026/spatial-awareness/',
+			paper: 'https://arxiv.org/abs/2611.27858',
 		}
 	},
 	{
