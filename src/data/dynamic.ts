@@ -10,7 +10,8 @@ export const dynamicPubs = [
     "links": {
       "paper": "https://arxiv.org/abs/2512.08016",
       "github": "https://github.com/knowledge-computing/FRIEDA",
-      "webpage": "https://knowledge-computing.github.io/FRIEDA/"
+      "webpage": "https://knowledge-computing.github.io/FRIEDA/",
+      "poster": '/posters/ICLR2026-FRIEDA-Poster.pdf',
     }
   },
   {

@@ -27,6 +27,7 @@ export const staticPubs = [
 		year: 2026,
 		links: {
 			webpage: 'https://iclr-blogposts.github.io/2026/blog/2026/spatial-awareness/',
+			poster: '/posters/ICLR2026-Poster-Blog.pdf'
 		}
 	},
 	{
