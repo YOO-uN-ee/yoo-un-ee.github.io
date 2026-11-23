@@ -1,0 +1,42 @@
+export const researchExperience = [
+	{
+		role: 'Graduate Researcher',
+		roleKo: '대학원 연구원',
+		institution: 'Oak Ridge National Laboratory',
+		institutionKo: '오크리지 국립연구소',
+		dates: 'May–Aug 2026',
+		datesKo: '2026년 5월–8월',
+		description: 'Developed a 72,000-question benchmark to evaluate how vision-language models interpret 6,835 NOAA nautical charts. Built an automated pipeline that turns vector chart data into rendered images, questions, and reference answers.',
+		descriptionKo: '미국 해양대기청(NOAA)의 해도 6,835개를 바탕으로 시각 언어 모델의 해도 이해 능력을 평가하는 72,000문항 규모의 벤치마크를 개발했습니다. 해도 벡터 데이터에서 이미지, 질문, 기준 답안을 자동으로 생성하는 파이프라인을 구축했습니다.',
+		link: {
+			text: 'ENC-QA preprint',
+			textKo: 'ENC-QA 프리프린트',
+			href: 'https://arxiv.org/abs/2611.27858',
+		},
+	},
+	{
+		role: 'Graduate Research Assistant',
+		roleKo: '대학원 연구조교',
+		institution: 'University of Minnesota · Knowledge Computing Lab',
+		institutionKo: '미네소타 대학교 · Knowledge Computing Lab',
+		dates: '2023–2026',
+		datesKo: '2023년–2026년',
+		description: 'Co-developed FRIEDA, a benchmark for multi-step reasoning across maps, and worked on natural language processing pipelines to identify and georeference racial covenants in historical property records.',
+		descriptionKo: '여러 지도에 걸친 다단계 추론을 평가하는 FRIEDA 벤치마크를 공동 개발하고, 역사적 부동산 기록에서 인종 차별 약정을 찾아 지리적 위치를 부여하는 자연어 처리 파이프라인 연구에 참여했습니다.',
+		link: {
+			text: 'FRIEDA paper',
+			textKo: 'FRIEDA 논문',
+			href: 'https://arxiv.org/abs/2512.08016',
+		},
+	},
+	{
+		role: 'Research Intern',
+		roleKo: '연구 인턴',
+		institution: 'Reykjavík University · Language and Voice Lab',
+		institutionKo: '레이캬비크 대학교 · Language and Voice Lab',
+		dates: 'May–Aug 2022',
+		datesKo: '2022년 5월–8월',
+		description: 'Researched natural language processing for Icelandic and evaluated language models for multilingual customer feedback analysis.',
+		descriptionKo: '아이슬란드어 자연어 처리 기법을 연구하고 다국어 고객 피드백 분석에 쓰이는 언어 모델의 성능을 평가했습니다.',
+	},
+];

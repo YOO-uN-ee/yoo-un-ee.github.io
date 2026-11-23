@@ -22,9 +22,10 @@ const mobileLinkClass = (path: string) =>
 
 <nav class="fixed top-0 left-0 right-0 z-50 flex justify-center pt-3 sm:pt-6 px-4">
 	<div class="backdrop-blur-md bg-white/80 dark:bg-gray-950/80 border border-gray-200 dark:border-gray-700 rounded-full px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between sm:justify-center gap-2 sm:gap-6 shadow-sm w-full sm:w-auto">
-		<div class="hidden sm:flex items-center gap-6">
+		<div class="hidden sm:flex items-center gap-4 md:gap-6">
 			<a href="/" class={linkClass('/')} data-ko="홈">Home</a>
 			<a href="/publications" class={linkClass('/publications')} data-ko="연구 논문">Publications</a>
+			<a href="/experience" class={linkClass('/experience')} aria-current={isActive('/experience') ? 'page' : undefined} data-ko="연구 경력">Experience</a>
 			<a href="/education" class={linkClass('/education')} data-ko="학력">Education</a>
 			<a href="/blogs" class={linkClass('/blogs')} data-ko="블로그">Blogs</a>
 			<a href="/contact" class={linkClass('/contact')} data-ko="연락처">Contact</a>
@@ -69,6 +70,7 @@ const mobileLinkClass = (path: string) =>
 	<div id="mobile-menu" class="hidden absolute top-14 left-4 right-4 backdrop-blur-md bg-white/80 dark:bg-gray-950/80 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 space-y-2 shadow-lg sm:hidden">
 		<a href="/" onclick="window.closeMobileMenu()" class={mobileLinkClass('/')} data-ko="홈">Home</a>
 		<a href="/publications" onclick="window.closeMobileMenu()" class={mobileLinkClass('/publications')} data-ko="연구 논문">Publications</a>
+		<a href="/experience" onclick="window.closeMobileMenu()" class={mobileLinkClass('/experience')} aria-current={isActive('/experience') ? 'page' : undefined} data-ko="연구 경력">Experience</a>
 		<a href="/education" onclick="window.closeMobileMenu()" class={mobileLinkClass('/education')} data-ko="학력">Education</a>
 		<a href="/blogs" onclick="window.closeMobileMenu()" class={mobileLinkClass('/blogs')} data-ko="블로그">Blogs</a>
 		<a href="/contact" onclick="window.closeMobileMenu()" class={mobileLinkClass('/contact')} data-ko="연락처">Contact</a>

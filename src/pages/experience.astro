@@ -1,0 +1,52 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { researchExperience } from '../data/experience';
+---
+
+<Layout title="Experience | Jiyoon Pyo" titleKo="연구 경력 | 표지윤">
+	<Header />
+
+	<main class="min-h-screen px-4 sm:px-6">
+		<section class="max-w-3xl mx-auto pt-24 sm:pt-32 md:pt-48 pb-16 sm:pb-24 px-2 sm:px-0">
+			<header class="max-w-2xl mb-12 sm:mb-16">
+				<h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white" data-ko="연구 경력">
+					Research Experience
+				</h1>
+				<p class="mt-3 sm:mt-4 text-sm sm:text-lg text-gray-600 dark:text-gray-400" data-ko="연구 활동, 협업 및 실무 경력을 소개합니다.">
+					Research appointments, collaborations, and professional experience.
+				</p>
+			</header>
+
+			<ol class="space-y-8 sm:space-y-12">
+				{researchExperience.map((experience) => (
+					<li class="relative pl-6 sm:pl-8 border-l-2 border-gray-200 dark:border-gray-700">
+						<span class="absolute -left-2 top-1 w-4 h-4 rounded-full bg-gray-400 dark:bg-gray-500" aria-hidden="true"></span>
+						<div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+							<h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white" data-ko={experience.roleKo}>
+								{experience.role}
+							</h2>
+							<p class="text-xs sm:text-sm sm:shrink-0 font-medium text-gray-600 dark:text-gray-400" data-ko={experience.datesKo}>
+								{experience.dates}
+							</p>
+						</div>
+						<p class="mt-2 sm:mt-1 text-sm sm:text-lg font-medium text-gray-700 dark:text-gray-300" data-ko={experience.institutionKo}>
+							{experience.institution}
+						</p>
+						<p class="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-gray-400" data-ko={experience.descriptionKo}>
+							{experience.description}
+						</p>
+						{experience.link && (
+							<a href={experience.link.href} target="_blank" rel="noreferrer" class="inline-block mt-2 text-sm font-medium text-gray-600 dark:text-gray-400 underline underline-offset-4 hover:text-gray-900 dark:hover:text-white transition-colors" data-ko={experience.link.textKo}>
+								{experience.link.text}
+							</a>
+						)}
+					</li>
+				))}
+			</ol>
+		</section>
+	</main>
+
+	<Footer />
+</Layout>
